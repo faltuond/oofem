@@ -70,7 +70,7 @@ protected:
     bool useTangent; ///< Determines if tangent should be used.
     IntArray slaveSet;
     IntArray masterSet;
-    std :: vector< std :: unique_ptr< DofManager > >lmdm;
+    std :: vector<  DofManager * >lmdm;
 public:
 
     /// Constructor.
@@ -93,7 +93,7 @@ public:
     virtual const char *giveInputRecordName() const { return _IFT_Node2NodeLagrangianMultiplierContact_Name; }
 
     int giveNumberOfInternalDofManagers() override { return masterSet.giveSize(); }
-    DofManager *giveInternalDofManager(int i) override { return this->lmdm.at(i - 1).get(); }
+    DofManager *giveInternalDofManager(int i) override { return this->lmdm.at(i - 1); }
 
 
 

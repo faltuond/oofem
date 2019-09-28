@@ -61,8 +61,8 @@ Node2NodeLagrangianMultiplierContact :: initializeFrom(InputRecord *ir)
 
     // these are internal lagrange multipliers used to enforce the no penetration for the contacting bodies
     for ( int pos = 0; pos < masterSet.giveSize(); ++pos ) {
-        lmdm.push_back(std :: unique_ptr< Node >(new Node(0, domain) ) );
-        lmdm.at(pos)->appendDof(new MasterDof(this->lmdm.at(pos).get(), ( DofIDItem ) ( this->giveDomain()->giveNextFreeDofID() ) ) );
+        lmdm.emplace_back(/*std::make_unique<Node>*/ new Node(0, domain) );
+        lmdm.at(pos)->appendDof(new MasterDof(this->lmdm.at(pos), ( DofIDItem ) ( this->giveDomain()->giveNextFreeDofID() ) ) );
     }
 
     return ActiveBoundaryCondition :: initializeFrom(ir);
