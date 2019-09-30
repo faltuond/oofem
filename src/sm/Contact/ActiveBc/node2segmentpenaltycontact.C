@@ -64,7 +64,7 @@ namespace oofem {
         }
         
         FloatMatrix K;
-        IntArray loc, c_loc;
+        IntArray loc;
 
         IntArray dofIdArray = {
             D_u, D_v
@@ -86,6 +86,8 @@ namespace oofem {
                 }
 
                 //getting locarrays just from node, not from element. Problem?
+                //probable course of action - element shall assemble its part by itself
+                //question - how does element know the penalty value??
                 node->giveLocationArray(dofIdArray, loc, r_s);
 
                 this->computeTangentFromContact(K, node, segment, tStep);
@@ -95,20 +97,86 @@ namespace oofem {
     }
     void Node2SegmentPenaltyContact::assembleVector(FloatArray & answer, TimeStep * tStep, CharType type, ValueModeType mode, const UnknownNumberingScheme & s, FloatArray * eNorms)
     {
+        if ( type != ExternalForcesVector ) {
+            return;
+        }
+
+        //IntArray dofIdArray = {D_u, D_v, D_w};
+        IntArray dofIdArray = {
+            D_u, D_v
+        };
+
+        IntArray loc;
+        FloatArray fext;
+
+        for ( int nodePos = 1; nodePos <= nodeSet.giveSize(); ++nodePos ) {
+            for ( int segmentPos = 1; segmentPos <= segmentSet.giveSize(); segmentPos++ ) {
+                Node* node = this->giveDomain()->giveNode(nodeSet.at(nodePos));
+
+                //check whether element is a valid contact segment
+                StructuralElement* element = dynamic_cast<StructuralElement*>(this->giveDomain()->giveElement(segmentSet.at(segmentPos)));
+                Node2SegmentInterface* segment = dynamic_cast<Node2SegmentInterface*>(element);
+
+                if ( segment == nullptr ) {
+                    OOFEM_ERROR("A specified contact element is not an instance of Node2SegmentInterface");
+                    return;
+                }
+
+                //again - loc just from node??
+                node->giveLocationArray(dofIdArray, loc, s);
+                this->computeExternalForcesFromContact(fext, node, segment, tStep);
+                answer.assemble(fext, loc);
+            }
+                       
+        }
     }
     void Node2SegmentPenaltyContact::computeTangentFromContact(FloatMatrix & answer, Node * node, Node2SegmentInterface * segment, TimeStep * tStep)
     {
+        double gap;
+        FloatArray Nv;
+        this->computeGap(gap, node, segment, tStep);
+        this->computeNormalMatrixAt(Nv, node, segment, tStep);
+        answer.beDyadicProductOf(Nv, Nv);
+        answer.times(this->penalty);
+        if ( gap > 0.0 ) answer.zero();
     }
     void Node2SegmentPenaltyContact::computeGap(double & answer, Node *node, Node2SegmentInterface *segment, TimeStep * tStep)
     {
+        answer = segment->computePenetration(node);
     }
     void Node2SegmentPenaltyContact::computeNormalMatrixAt(FloatArray & answer, Node * node, Node2SegmentInterface * segment, TimeStep * TimeStep)
     {
+        //this implementation assumes that the normal computed by Node2SegmentInterface::computeProjection()
+        //is the normal in the undeformed state, and that this is the normal to be used all the time
+        //i. e. small deformations are assumed
+
+        //if Node2SegmentInterface::computeProjection() would compute the normal in deformed state, problems could
+        //arise when the normal is normalized (divide by (a number close to) zero)
+
+        FloatArray normal;
+        segment->computeProjection(normal, node);
+        double norm = normal.computeNorm();
+        normal.times(1.0 / norm);
+        
+        answer = {
+            normal.at(1), normal.at(2),
+            -normal.at(1), -normal.at(2)
+        };
     }
     void Node2SegmentPenaltyContact::computeExternalForcesFromContact(FloatArray & answer, Node * node, Node2SegmentInterface * segment, TimeStep * tStep)
     {
+        double gap;
+        this->computeGap(gap, node, segment, tStep);
+        this->computeNormalMatrixAt(answer, node, segment, tStep);
+        if ( gap < 0.0 ) {
+            answer.times(penalty * gap);
+        }
+        else {
+            answer.times(0);
+        }
     }
     void Node2SegmentPenaltyContact::giveLocationArrays(std::vector<IntArray>& rows, std::vector<IntArray>& cols, CharType type, const UnknownNumberingScheme & r_s, const UnknownNumberingScheme & c_s)
     {
+        //to be implemented
     }
 }
