@@ -43,11 +43,11 @@ namespace oofem {
     class Node2SegmentInterface : ContactElementInterface
     {
     public:
-        Node2SegmentInterface();
-        ~Node2SegmentInterface();
+        Node2SegmentInterface() {};
+        ~Node2SegmentInterface() {};
 
         virtual void computeProjection(FloatArray& answer, const Node * node);
-        virtual double computePenetration(Node * node);
+        virtual double computePenetration(const Node * node);
     };
 
 }

@@ -56,8 +56,42 @@ namespace oofem {
         
         return ActiveBoundaryCondition::initializeFrom(ir);
     }
+
     void Node2SegmentPenaltyContact::assemble(SparseMtrx & answer, TimeStep * tStep, CharType type, const UnknownNumberingScheme & r_s, const UnknownNumberingScheme & c_s, double scale)
     {
+        if ( !this->useTangent || type != TangentStiffnessMatrix ) {
+            return;
+        }
+        
+        FloatMatrix K;
+        IntArray loc, c_loc;
+
+        IntArray dofIdArray = {
+            D_u, D_v
+        };
+
+        //iterate over all pairs of nodes and segments
+        for ( int nodePos = 1; nodePos <= nodeSet.giveSize(); ++nodePos ) {
+            for ( int segmentPos = 1; segmentPos <= segmentSet.giveSize(); segmentPos++ ) {
+
+                Node* node = this->giveDomain()->giveNode(nodeSet.at(nodePos));
+
+                //check whether element is a valid contact segment
+                StructuralElement* element = dynamic_cast<StructuralElement*>(this->giveDomain()->giveElement(segmentSet.at(segmentPos)));
+                Node2SegmentInterface* segment = dynamic_cast<Node2SegmentInterface*>(element);
+
+                if ( segment == nullptr ) {
+                    OOFEM_ERROR("A specified contact element is not an instance of Node2SegmentInterface");
+                    return;
+                }
+
+                //getting locarrays just from node, not from element. Problem?
+                node->giveLocationArray(dofIdArray, loc, r_s);
+
+                this->computeTangentFromContact(K, node, segment, tStep);
+                answer.assemble(loc, K);
+            }
+        }
     }
     void Node2SegmentPenaltyContact::assembleVector(FloatArray & answer, TimeStep * tStep, CharType type, ValueModeType mode, const UnknownNumberingScheme & s, FloatArray * eNorms)
     {
@@ -65,7 +99,7 @@ namespace oofem {
     void Node2SegmentPenaltyContact::computeTangentFromContact(FloatMatrix & answer, Node * node, Node2SegmentInterface * segment, TimeStep * tStep)
     {
     }
-    void Node2SegmentPenaltyContact::computeGap(double & answer, Node * masterNode, Node * slaveNode, TimeStep * tStep)
+    void Node2SegmentPenaltyContact::computeGap(double & answer, Node *node, Node2SegmentInterface *segment, TimeStep * tStep)
     {
     }
     void Node2SegmentPenaltyContact::computeNormalMatrixAt(FloatArray & answer, Node * node, Node2SegmentInterface * segment, TimeStep * TimeStep)

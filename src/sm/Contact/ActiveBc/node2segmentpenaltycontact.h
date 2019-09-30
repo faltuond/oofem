@@ -36,7 +36,16 @@
 
 #include "activebc.h"
 #include "node.h"
+#include "floatmatrix.h"
 #include "sm/Contact/ContactElement/node2segmentinterface.h"
+#include "set.h"
+#include "domain.h"
+#include "node.h"
+#include "floatmatrix.h"
+#include "unknownnumberingscheme.h"
+#include "sparsemtrx.h"
+#include "classfactory.h"
+#include "sm/Elements/structuralelement.h"
 
 #define _IFT_Node2SegmentPenaltyContact_Name "n2spenaltycontact"
 #define _IFT_Node2SegmentPenaltyContact_penalty "penalty"
@@ -67,12 +76,12 @@ namespace oofem {
             const UnknownNumberingScheme &s, FloatArray *eNorms = NULL) override;
 
 
-        virtual const char *giveClassName() const { return "Node2SegmentenaltyContact"; }
+        virtual const char *giveClassName() const { return "Node2SegmentPenaltyContact"; }
         virtual const char *giveInputRecordName() const { return _IFT_Node2SegmentPenaltyContact_Name; }
 
 
         void computeTangentFromContact(FloatMatrix &answer, Node *node, Node2SegmentInterface *segment, TimeStep *tStep);
-        void computeGap(double &answer, Node *masterNode, Node *slaveNode, TimeStep *tStep);
+        void computeGap(double &answer, Node *node, Node2SegmentInterface *segment, TimeStep *tStep);
 
         void computeNormalMatrixAt(FloatArray &answer, Node *node, Node2SegmentInterface *segment, TimeStep *TimeStep);
 

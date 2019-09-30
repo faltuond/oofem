@@ -41,8 +41,8 @@ namespace oofem {
     class ContactElementInterface
     {
     public:
-        ContactElementInterface();
-        ~ContactElementInterface();
+        ContactElementInterface() {};
+        ~ContactElementInterface() {};
     };
 }
 

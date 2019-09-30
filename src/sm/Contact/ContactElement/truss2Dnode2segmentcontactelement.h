@@ -47,7 +47,7 @@ namespace oofem {
         ~Truss2DNode2SegmentContactElement();
 
         void computeProjection(FloatArray& answer, const Node* node) override;
-        double computePenetration(Node* node) override;
+        double computePenetration(const Node* node) override;
 
         const char *giveInputRecordName() const override { return _IFT_Truss2DNode2SegmentContactElement_Name; }
         const char *giveClassName() const override { return "Truss2DNode2SegmentContactElement"; }

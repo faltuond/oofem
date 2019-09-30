@@ -48,7 +48,7 @@ namespace oofem {
     {
         return;
     }
-    double Truss2DNode2SegmentContactElement::computePenetration(Node * node)
+    double Truss2DNode2SegmentContactElement::computePenetration(const Node * node)
     {
         return 0.0;
     }
