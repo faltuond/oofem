@@ -177,6 +177,37 @@ namespace oofem {
     }
     void Node2SegmentPenaltyContact::giveLocationArrays(std::vector<IntArray>& rows, std::vector<IntArray>& cols, CharType type, const UnknownNumberingScheme & r_s, const UnknownNumberingScheme & c_s)
     {
-        //to be implemented
+        //returns all possible combinations of dof that can theoretically be triggered by contact
+        //of any segment with any node. Room for optimization aplenty...
+        IntArray n_loc, s_loc;
+
+        int ncombinations = nodeSet.giveSize() * segmentSet.giveSize();
+        rows.resize(ncombinations);
+        cols.resize(ncombinations);
+        IntArray dofIdArray = {
+            D_u, D_v
+        };
+
+        int pos = 0;
+
+        for ( int nodePos = 1; nodePos <= nodeSet.giveSize(); nodePos++ ) {
+            for ( int segmentPos = 1; segmentPos <= segmentSet.giveSize(); segmentPos++ ) {
+                Node* node = this->giveDomain()->giveNode(nodeSet.at(nodePos));
+                StructuralElement* element = dynamic_cast<StructuralElement*>(this->giveDomain()->giveElement(segmentSet.at(segmentPos)));
+                Node2SegmentInterface* segment = dynamic_cast<Node2SegmentInterface*>(element);
+                if ( segment == nullptr ) {
+                    OOFEM_ERROR("A specified contact element is not an instance of Node2SegmentInterface");
+                    return;
+                }
+
+                node->giveLocationArray(dofIdArray, n_loc, r_s);
+                segment->giveLocationArray(dofIdArray, s_loc, c_s);
+
+                // insert location arrays into the answer fields
+                rows[pos] = n_loc;
+                cols[pos] = s_loc;
+                pos++;
+            }
+        }
     }
 }

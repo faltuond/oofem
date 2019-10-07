@@ -48,6 +48,7 @@ namespace oofem {
 
         virtual void computeProjection(FloatArray& answer, const Node * node);
         virtual double computePenetration(const Node * node);
+        virtual void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s);
     };
 
 }
