@@ -46,7 +46,7 @@ namespace oofem {
         Node2SegmentInterface() {};
         ~Node2SegmentInterface() {};
 
-        virtual void computeProjection(FloatArray& answer, const Node * node);
+        virtual void computeNormalTerm(FloatArray& answer, const Node * node);
         virtual double computePenetration(const Node * node);
         virtual void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s);
     };

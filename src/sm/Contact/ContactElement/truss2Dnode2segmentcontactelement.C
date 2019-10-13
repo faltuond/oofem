@@ -44,7 +44,7 @@ namespace oofem {
     Truss2DNode2SegmentContactElement::~Truss2DNode2SegmentContactElement()
     {
     }
-    void Truss2DNode2SegmentContactElement::computeProjection(FloatArray& answer, const Node * node)
+    void Truss2DNode2SegmentContactElement::computeNormalTerm(FloatArray& answer, const Node * node)
     {
         return;
     }

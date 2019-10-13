@@ -64,7 +64,7 @@ namespace oofem {
         }
         
         FloatMatrix K;
-        IntArray loc;
+        IntArray loc, seg_loc;
 
         IntArray dofIdArray = {
             D_u, D_v
@@ -85,10 +85,10 @@ namespace oofem {
                     return;
                 }
 
-                //getting locarrays just from node, not from element. Problem?
-                //probable course of action - element shall assemble its part by itself
-                //question - how does element know the penalty value??
+                //assembling for both node and segment
                 node->giveLocationArray(dofIdArray, loc, r_s);
+                segment->giveLocationArray(dofIdArray, seg_loc, r_s);
+                loc.followedBy(seg_loc);
 
                 this->computeTangentFromContact(K, node, segment, tStep);
                 answer.assemble(loc, K);
@@ -106,7 +106,7 @@ namespace oofem {
             D_u, D_v
         };
 
-        IntArray loc;
+        IntArray loc, seg_loc;
         FloatArray fext;
 
         for ( int nodePos = 1; nodePos <= nodeSet.giveSize(); ++nodePos ) {
@@ -122,8 +122,11 @@ namespace oofem {
                     return;
                 }
 
-                //again - loc just from node??
+                //assemble into node and segment loc
                 node->giveLocationArray(dofIdArray, loc, s);
+                segment->giveLocationArray(dofIdArray, seg_loc, s);
+                loc.followedBy(seg_loc);
+
                 this->computeExternalForcesFromContact(fext, node, segment, tStep);
                 answer.assemble(fext, loc);
             }
@@ -132,6 +135,11 @@ namespace oofem {
     }
     void Node2SegmentPenaltyContact::computeTangentFromContact(FloatMatrix & answer, Node * node, Node2SegmentInterface * segment, TimeStep * tStep)
     {
+        //considering that the tangent is given as
+        //int across seg (N^T * (n x n) * N), which is equivalent to
+        //int across seg ((N^T * n) * (N^T * n)^T)
+        //it is sufficient just to dyadically multiply the "normals"
+
         double gap;
         FloatArray Nv;
         this->computeGap(gap, node, segment, tStep);
@@ -146,22 +154,21 @@ namespace oofem {
     }
     void Node2SegmentPenaltyContact::computeNormalMatrixAt(FloatArray & answer, Node * node, Node2SegmentInterface * segment, TimeStep * TimeStep)
     {
-        //this implementation assumes that the normal computed by Node2SegmentInterface::computeProjection()
-        //is the normal in the undeformed state, and that this is the normal to be used all the time
-        //i. e. small deformations are assumed
-
-        //if Node2SegmentInterface::computeProjection() would compute the normal in deformed state, problems could
-        //arise when the normal is normalized (divide by (a number close to) zero)
+        //computeNormalTerm is expected to return an integrated term
+        // int across seg (N^T * n), where N = element Nmatrix and n = normal projection of node
 
         FloatArray normal;
-        segment->computeProjection(normal, node);
+        segment->computeNormalTerm(normal, node);
         double norm = normal.computeNorm();
         normal.times(1.0 / norm);
         
-        answer = {
+        //normal should be given just as N^t * n;
+        answer = normal;
+
+        /*answer = {
             normal.at(1), normal.at(2),
             -normal.at(1), -normal.at(2)
-        };
+        };*/
     }
     void Node2SegmentPenaltyContact::computeExternalForcesFromContact(FloatArray & answer, Node * node, Node2SegmentInterface * segment, TimeStep * tStep)
     {
@@ -203,7 +210,7 @@ namespace oofem {
                 node->giveLocationArray(dofIdArray, n_loc, r_s);
                 segment->giveLocationArray(dofIdArray, s_loc, c_s);
 
-                // insert location arrays into the answer fields
+                // insert location arrays into the answer arrays
                 rows[pos] = n_loc;
                 cols[pos] = s_loc;
                 pos++;
