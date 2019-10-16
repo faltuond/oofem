@@ -154,21 +154,17 @@ namespace oofem {
     }
     void Node2SegmentPenaltyContact::computeNormalMatrixAt(FloatArray & answer, Node * node, Node2SegmentInterface * segment, TimeStep * TimeStep)
     {
-        //computeNormalTerm is expected to return an integrated term
-        // int across seg (N^T * n), where N = element Nmatrix and n = normal projection of node
+        //computeNormal is expected to return an integrated term
+        // int across seg (N^T * n), where N = element Nmatrix (extended by zeros for the node) and n = normal projection of node
 
         FloatArray normal;
-        segment->computeNormalTerm(normal, node);
-        double norm = normal.computeNorm();
-        normal.times(1.0 / norm);
+        FloatMatrix extendedN, extendedNTranspose;
+        segment->computeNormal(normal, node);
+        segment->computeExtendedNMatrix(extendedN, node);
+        extendedNTranspose.beTranspositionOf(extendedN);
         
         //normal should be given just as N^t * n;
-        answer = normal;
-
-        /*answer = {
-            normal.at(1), normal.at(2),
-            -normal.at(1), -normal.at(2)
-        };*/
+        answer.beProductOf(extendedN, normal);
     }
     void Node2SegmentPenaltyContact::computeExternalForcesFromContact(FloatArray & answer, Node * node, Node2SegmentInterface * segment, TimeStep * tStep)
     {
@@ -202,6 +198,7 @@ namespace oofem {
                 Node* node = this->giveDomain()->giveNode(nodeSet.at(nodePos));
                 StructuralElement* element = dynamic_cast<StructuralElement*>(this->giveDomain()->giveElement(segmentSet.at(segmentPos)));
                 Node2SegmentInterface* segment = dynamic_cast<Node2SegmentInterface*>(element);
+                                
                 if ( segment == nullptr ) {
                     OOFEM_ERROR("A specified contact element is not an instance of Node2SegmentInterface");
                     return;
