@@ -75,15 +75,7 @@ namespace oofem {
             for ( int segmentPos = 1; segmentPos <= segmentSet.giveSize(); segmentPos++ ) {
 
                 Node* node = this->giveDomain()->giveNode(nodeSet.at(nodePos));
-
-                //check whether element is a valid contact segment
-                StructuralElement* element = dynamic_cast<StructuralElement*>(this->giveDomain()->giveElement(segmentSet.at(segmentPos)));
-                Node2SegmentInterface* segment = dynamic_cast<Node2SegmentInterface*>(element);
-
-                if ( segment == nullptr ) {
-                    OOFEM_ERROR("A specified contact element is not an instance of Node2SegmentInterface");
-                    return;
-                }
+                ContactSegment* segment = (this->giveDomain()->giveContactSegment(segmentSet.at(segmentPos)));
 
                 //assembling for both node and segment
                 node->giveLocationArray(dofIdArray, loc, r_s);
@@ -112,15 +104,7 @@ namespace oofem {
         for ( int nodePos = 1; nodePos <= nodeSet.giveSize(); ++nodePos ) {
             for ( int segmentPos = 1; segmentPos <= segmentSet.giveSize(); segmentPos++ ) {
                 Node* node = this->giveDomain()->giveNode(nodeSet.at(nodePos));
-
-                //check whether element is a valid contact segment
-                StructuralElement* element = dynamic_cast<StructuralElement*>(this->giveDomain()->giveElement(segmentSet.at(segmentPos)));
-                Node2SegmentInterface* segment = dynamic_cast<Node2SegmentInterface*>(element);
-
-                if ( segment == nullptr ) {
-                    OOFEM_ERROR("A specified contact element is not an instance of Node2SegmentInterface");
-                    return;
-                }
+                ContactSegment* segment = (this->giveDomain()->giveContactSegment(segmentSet.at(segmentPos)));
 
                 //assemble into node and segment loc
                 node->giveLocationArray(dofIdArray, loc, s);
@@ -133,7 +117,7 @@ namespace oofem {
                        
         }
     }
-    void Node2SegmentPenaltyContact::computeTangentFromContact(FloatMatrix & answer, Node * node, Node2SegmentInterface * segment, TimeStep * tStep)
+    void Node2SegmentPenaltyContact::computeTangentFromContact(FloatMatrix & answer, Node * node, ContactSegment * segment, TimeStep * tStep)
     {
         //considering that the tangent is given as
         //int across seg (N^T * (n x n) * N), which is equivalent to
@@ -148,14 +132,14 @@ namespace oofem {
         answer.times(this->penalty);
         if ( gap > 0.0 ) answer.zero();
     }
-    void Node2SegmentPenaltyContact::computeGap(double & answer, Node *node, Node2SegmentInterface *segment, TimeStep * tStep)
+    void Node2SegmentPenaltyContact::computeGap(double & answer, Node *node, ContactSegment *segment, TimeStep * tStep)
     {
         answer = segment->computePenetration(node);
     }
-    void Node2SegmentPenaltyContact::computeNormalMatrixAt(FloatArray & answer, Node * node, Node2SegmentInterface * segment, TimeStep * TimeStep)
+    void Node2SegmentPenaltyContact::computeNormalMatrixAt(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * TimeStep)
     {
         //computeNormal is expected to return an integrated term
-        // int across seg (N^T * n), where N = element Nmatrix (extended by zeros for the node) and n = normal projection of node
+        // int across seg (N^T), where N = element Nmatrix (extended by zeros for the node)
 
         FloatArray normal;
         FloatMatrix extendedN, extendedNTranspose;
@@ -166,7 +150,7 @@ namespace oofem {
         //normal should be given just as N^t * n;
         answer.beProductOf(extendedN, normal);
     }
-    void Node2SegmentPenaltyContact::computeExternalForcesFromContact(FloatArray & answer, Node * node, Node2SegmentInterface * segment, TimeStep * tStep)
+    void Node2SegmentPenaltyContact::computeExternalForcesFromContact(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * tStep)
     {
         double gap;
         this->computeGap(gap, node, segment, tStep);
@@ -196,13 +180,7 @@ namespace oofem {
         for ( int nodePos = 1; nodePos <= nodeSet.giveSize(); nodePos++ ) {
             for ( int segmentPos = 1; segmentPos <= segmentSet.giveSize(); segmentPos++ ) {
                 Node* node = this->giveDomain()->giveNode(nodeSet.at(nodePos));
-                StructuralElement* element = dynamic_cast<StructuralElement*>(this->giveDomain()->giveElement(segmentSet.at(segmentPos)));
-                Node2SegmentInterface* segment = dynamic_cast<Node2SegmentInterface*>(element);
-                                
-                if ( segment == nullptr ) {
-                    OOFEM_ERROR("A specified contact element is not an instance of Node2SegmentInterface");
-                    return;
-                }
+                ContactSegment* segment = (this->giveDomain()->giveContactSegment(segmentSet.at(segmentPos)));
 
                 node->giveLocationArray(dofIdArray, n_loc, r_s);
                 segment->giveLocationArray(dofIdArray, s_loc, c_s);

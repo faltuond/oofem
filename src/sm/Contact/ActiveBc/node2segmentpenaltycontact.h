@@ -37,7 +37,7 @@
 #include "activebc.h"
 #include "node.h"
 #include "floatmatrix.h"
-#include "sm/Contact/ContactElement/node2segmentinterface.h"
+#include "sm/Contact/ContactSegment/ContactSegment.h"
 #include "set.h"
 #include "domain.h"
 #include "node.h"
@@ -80,13 +80,13 @@ namespace oofem {
         virtual const char *giveInputRecordName() const { return _IFT_Node2SegmentPenaltyContact_Name; }
 
 
-        void computeTangentFromContact(FloatMatrix &answer, Node *node, Node2SegmentInterface *segment, TimeStep *tStep);
-        void computeGap(double &answer, Node *node, Node2SegmentInterface *segment, TimeStep *tStep);
+        void computeTangentFromContact(FloatMatrix &answer, Node *node, ContactSegment *segment, TimeStep *tStep);
+        void computeGap(double &answer, Node *node, ContactSegment *segment, TimeStep *tStep);
 
-        void computeNormalMatrixAt(FloatArray &answer, Node *node, Node2SegmentInterface *segment, TimeStep *TimeStep);
+        void computeNormalMatrixAt(FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *TimeStep);
 
 
-        void computeExternalForcesFromContact(FloatArray &answer, Node *node, Node2SegmentInterface *segment, TimeStep *tStep);
+        void computeExternalForcesFromContact(FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep);
 
         void giveLocationArrays(std::vector< IntArray > &rows, std::vector< IntArray > &cols, CharType type, const UnknownNumberingScheme &r_s, const UnknownNumberingScheme &c_s);
     };

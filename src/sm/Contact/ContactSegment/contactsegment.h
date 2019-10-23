@@ -44,10 +44,21 @@ namespace oofem {
       ContactSegment(int n, Domain *aDomain) : FEMComponent(n, aDomain){;}
       ~ContactSegment() {};
 
+      ////returns normalized n, which is an normal vector of contact
+      //virtual void computeNormal(FloatArray& answer, const Node * node) = 0;
+      ////computes the penetration
+      //virtual double computePenetration(const Node * node) = 0;
+      //virtual void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) = 0;
+
       //returns normalized n, which is an normal vector of contact
       virtual void computeNormal(FloatArray& answer, const Node * node) = 0;
-      //computes the penetration
+
+      //returns an extended N (aka A) matrix, integrated at point of contact of given node
+      virtual void computeExtendedNMatrix(FloatMatrix& answer, const Node* node) = 0;
+
+      //computes the penetration of node given 
       virtual double computePenetration(const Node * node) = 0;
+
       virtual void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) = 0;
     };
 }
