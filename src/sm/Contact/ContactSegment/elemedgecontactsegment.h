@@ -39,10 +39,11 @@
 #include "node.h"
 #include "inputrecord.h"
 #include "Elements/structuralelement.h"
+#include "set.h"
 
 #define _IFT_ElementEdgeContactSegment_Name "ElementEdgeContactSegment"
 #define _IFT_ElementEdgeContactSegment_edgeSet "edgeset"
-#define _IFT_ElementEdgeContactSegment_elemSet "elemset"
+//#define _IFT_ElementEdgeContactSegment_elemSet "elemset"
 
 namespace oofem {
     class ElementEdgeContactSegment : public ContactSegment
@@ -57,19 +58,35 @@ namespace oofem {
         virtual void computeNormal(FloatArray& answer, Node * node, TimeStep* tstep) override;
 
         //returns an extended N (aka A) matrix, integrated at point of contact of given node
-        virtual void computeExtendedNMatrix(FloatMatrix& answer, const Node* node) override;
+        virtual void computeExtendedNMatrix(FloatMatrix& answer, Node* node, TimeStep * tStep) override;
 
         //computes the penetration of node given 
         virtual double computePenetration(Node * node, TimeStep * tStep) override;
 
-        virtual void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
+        virtual void giveLocationArray(IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
 
     protected:
-        IntArray elemSet, edgeSet;
-        
+        IntArray edges;
+        std::vector<Node*> knownNodes;
+        std::vector<IntArray> knownClosestEdges;
+
+        //gives the closest edge to a given node in the form of an IntArray(elempos,edgepos)
+        //only computes it again if it wasn't determined for this node in this solution step yet
+        //(i.e. the array of known closest edges is reset after step convergence)
+        void giveClosestEdge(IntArray& answer, Node * node, TimeStep * tStep);
+
         //computes distance of a point given by a set of coordinates to a line given by two sets of coordinates
         //returns whether point of intersection is inbetween the line points
-        bool computeDistanceVector(FloatArray& answer, const FloatArray& externalPoint, const FloatArray& linePoint1, const FloatArray& linePoint2);
+        bool computeDistanceVector(FloatArray& answer, const FloatArray& externalPoint, const FloatArray& linePoint1, const FloatArray& linePoint2, FloatArray * contactPointCoords = nullptr);
+
+        //searches the array of nodes to which a closest edge was already computed
+        //returns -1 if unsuccessful
+        inline int giveIndexOfKnownNode(const Node * node) {
+            for ( int i = 0; i < knownNodes.size(); i++ ) {
+                if ( node == knownNodes.at(i) ) return i;
+            }
+            return -1;
+        }
     };
 
 }

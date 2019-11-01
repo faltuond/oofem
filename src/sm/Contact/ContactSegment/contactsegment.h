@@ -36,6 +36,7 @@
 
 #pragma once
 #include "femcmpnn.h"
+#include "node.h"
 
 namespace oofem {
     class ContactSegment : public FEMComponent
@@ -54,12 +55,12 @@ namespace oofem {
       virtual void computeNormal(FloatArray& answer, Node * node, TimeStep* tstep) = 0;
 
       //returns an extended N (aka A) matrix, integrated at point of contact of given node
-      virtual void computeExtendedNMatrix(FloatMatrix& answer, const Node* node) = 0;
+      virtual void computeExtendedNMatrix(FloatMatrix& answer, Node* node, TimeStep * tStep) = 0;
 
       //computes the penetration of node given 
       virtual double computePenetration(Node * node, TimeStep * tStep) = 0;
 
-      virtual void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) = 0;
+      virtual void giveLocationArray(IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) = 0;
     };
 }
 

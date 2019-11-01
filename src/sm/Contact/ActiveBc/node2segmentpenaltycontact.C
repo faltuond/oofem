@@ -134,21 +134,21 @@ namespace oofem {
     }
     void Node2SegmentPenaltyContact::computeGap(double & answer, Node *node, ContactSegment *segment, TimeStep * tStep)
     {
-        answer = segment->computePenetration(node);
+        answer = segment->computePenetration(node, tStep);
     }
-    void Node2SegmentPenaltyContact::computeNormalMatrixAt(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * TimeStep)
+    void Node2SegmentPenaltyContact::computeNormalMatrixAt(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * tStep)
     {
         //computeNormal is expected to return an integrated term
         // int across seg (N^T), where N = element Nmatrix (extended by zeros for the node)
 
         FloatArray normal;
         FloatMatrix extendedN, extendedNTranspose;
-        segment->computeNormal(normal, node);
-        segment->computeExtendedNMatrix(extendedN, node);
+        segment->computeNormal(normal, node, tStep);
+        segment->computeExtendedNMatrix(extendedN, node, tStep);
         extendedNTranspose.beTranspositionOf(extendedN);
         
         //normal should be given just as N^t * n;
-        answer.beProductOf(extendedN, normal);
+        answer.beProductOf(extendedNTranspose, normal);
     }
     void Node2SegmentPenaltyContact::computeExternalForcesFromContact(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * tStep)
     {
