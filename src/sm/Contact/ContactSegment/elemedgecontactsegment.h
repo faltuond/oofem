@@ -55,15 +55,17 @@ namespace oofem {
         IRResultType initializeFrom(InputRecord * ir);
 
         //returns normalized n, which is an normal vector of contact
-        virtual void computeNormal(FloatArray& answer, Node * node, TimeStep* tstep) override;
+	void computeNormal(FloatArray& answer, Node * node, TimeStep* tstep) override;
 
         //returns an extended N (aka A) matrix, integrated at point of contact of given node
-        virtual void computeExtendedNMatrix(FloatMatrix& answer, Node* node, TimeStep * tStep) override;
+	void computeExtendedNMatrix(FloatMatrix& answer, Node* node, TimeStep * tStep) override;
 
         //computes the penetration of node given 
-        virtual double computePenetration(Node * node, TimeStep * tStep) override;
+	double computePenetration(Node * node, TimeStep * tStep) override;
 
-        virtual void giveLocationArray(IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
+	void giveLocationArray(IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
+
+	void updateYourself(TimeStep * tStep) override;
 
     protected:
         IntArray edges;

@@ -250,5 +250,15 @@ namespace oofem {
         return abs(contactPoint(0) - linePoint1(0)) < lineLength && abs(contactPoint(0) - linePoint2(0)) < lineLength;
     }
 
-
+void
+ElementEdgeContactSegment :: updateYourself(TimeStep *tStep)
+// Updates the receiver at end of step.
+{
+  // do the update
 }
+
+
+  
+}
+
+
