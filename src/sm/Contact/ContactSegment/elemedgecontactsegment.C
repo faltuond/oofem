@@ -254,7 +254,8 @@ void
 ElementEdgeContactSegment :: updateYourself(TimeStep *tStep)
 // Updates the receiver at end of step.
 {
-  // do the update
+    knownNodes.clear();
+    knownClosestEdges.clear();
 }
 
 
