@@ -250,7 +250,7 @@ private:
     /// Associative container containing ContactManager creators
     std :: map < std :: string, std::unique_ptr<ContactManager> ( * )(Domain *) > contactManList;
     std :: map < std :: string, std::unique_ptr<ContactDefinition> ( * )(ContactManager *) > contactDefList;
-    /// Associative container containing material creators with material name as key.
+    /// Associative container containing contact segment creators with name as key.
     std :: map < std :: string, std::unique_ptr<ContactSegment> ( * )(int, Domain *) > contactSegmentList;
 
 public:
