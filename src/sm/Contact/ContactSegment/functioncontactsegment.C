@@ -1,7 +1,12 @@
 #include "functioncontactsegment.h"
+#include "classfactory.h"
+
+
 
 namespace oofem {
-       
+
+  REGISTER_ContactSegment(FunctionContactSegment);
+
     IRResultType FunctionContactSegment::initializeFrom(InputRecord * ir)
     {
         IRResultType result;

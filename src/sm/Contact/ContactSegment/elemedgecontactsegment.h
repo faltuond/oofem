@@ -41,7 +41,7 @@
 #include "Elements/structuralelement.h"
 #include "set.h"
 
-#define _IFT_ElementEdgeContactSegment_Name "ElementEdgeContactSegment"
+#define _IFT_ElementEdgeContactSegment_Name "elementedgecontactsegment"
 #define _IFT_ElementEdgeContactSegment_edgeSet "edgeset"
 //#define _IFT_ElementEdgeContactSegment_elemSet "elemset"
 
@@ -67,6 +67,8 @@ namespace oofem {
 
 	void updateYourself(TimeStep * tStep) override;
 
+	const char *giveClassName() const override { return "Elemedgecontactsegment"; }
+	const char *giveInputRecordName() const override { return _IFT_ElementEdgeContactSegment_Name; }
     protected:
         IntArray edges;
         std::vector<Node*> knownNodes;

@@ -41,7 +41,7 @@
 #include "Elements/structuralelement.h"
 #include "set.h"
 
-#define _IFT_FunctionContactSegment_Name "FunctionContactSegment"
+#define _IFT_FunctionContactSegment_Name "functioncontactsegment"
 #define _IFT_FunctionContactSegment_function "function"
  //#define _IFT_ElementEdgeContactSegment_elemSet "elemset"
 
@@ -67,6 +67,8 @@ namespace oofem {
 
         void updateYourself(TimeStep * tStep) override;
 
+	const char *giveClassName() const override { return "Functioncontactsegment"; }
+	const char *giveInputRecordName() const override { return _IFT_FunctionContactSegment_Name; }
     };
 
 }

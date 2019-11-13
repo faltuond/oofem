@@ -1,7 +1,12 @@
 #include "elemedgecontactsegment.h"
+#include "classfactory.h"
 
 namespace oofem {
 
+
+REGISTER_ContactSegment(ElementEdgeContactSegment);
+
+  
     IRResultType ElementEdgeContactSegment::initializeFrom(InputRecord * ir)
     {
         IRResultType result;

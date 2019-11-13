@@ -162,7 +162,7 @@ template< typename T > Dof *dofCreator(DofIDItem dofid, DofManager *dman) { retu
 
 #define REGISTER_ContactManager(class) static bool __dummy_ ## class OOFEM_ATTR_UNUSED = GiveClassFactory().registerContactManager(_IFT_ ## class ## _Name, CTOR< ContactManager, class, Domain* > );
 #define REGISTER_ContactDefinition(class) static bool __dummy_ ## class OOFEM_ATTR_UNUSED = GiveClassFactory().registerContactDefinition(_IFT_ ## class ## _Name, CTOR< ContactDefinition, class, ContactManager* > );
- #define REGISTER_ContactSegment(class) static bool __dummy_ ## class OOFEM_ATTR_UNUSED = GiveClassFactory().registerContactSegment(_IFT_ ## class ## _Name, CTOR< ContactSegment, class, ContactSegment* > );
+ #define REGISTER_ContactSegment(class) static bool __dummy_ ## class OOFEM_ATTR_UNUSED = GiveClassFactory().registerContactSegment(_IFT_ ## class ## _Name, CTOR< ContactSegment, class, int, Domain* >);
 ///@todo What is this? Doesn't seem needed / Mikael
 #define REGISTER_Quasicontinuum(class) static bool __dummy_ ## class OOFEM_ATTR_UNUSED = GiveClassFactory().registerQuasicontinuum(_IFT_ ## class ## _Name, < QuasiContinuum, class, ????? > );
 //@}
@@ -517,6 +517,7 @@ public:
 
     std::unique_ptr<ContactSegment> createContactSegment(const char *name, int num, Domain *domain);
     bool registerContactSegment( const char *name, std::unique_ptr<ContactSegment> ( *creator )( int, Domain * ) );
+
 
 
     // Failure module (in development!)
