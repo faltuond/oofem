@@ -62,7 +62,9 @@ namespace oofem {
 
         //computes the penetration of node given 
 	double computePenetration(Node * node, TimeStep * tStep) override;
-
+	
+        int setnum;
+	
 	void giveLocationArray(IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
 
 	void updateYourself(TimeStep * tStep) override;
@@ -91,6 +93,8 @@ namespace oofem {
             }
             return -1;
         }
+	void postInitialize() override;
+	
     };
 
 }

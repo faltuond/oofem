@@ -1053,6 +1053,13 @@ Domain :: postInitialize()
     for ( auto &bc: bcList ) {
         bc->postInitialize();
     }
+
+    for ( auto &cs: contactSegmentList ) {
+        cs->postInitialize();
+    }
+	
+
+    
 }
 
 

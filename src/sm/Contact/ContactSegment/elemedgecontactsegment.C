@@ -11,15 +11,7 @@ REGISTER_ContactSegment(ElementEdgeContactSegment);
     {
         IRResultType result;
         //IR_GIVE_FIELD(ir, this->elemSet, _IFT_ElementEdgeContactSegment_elemSet);
-        int setnum;
         IR_GIVE_FIELD(ir, setnum, _IFT_ElementEdgeContactSegment_edgeSet);
-
-        Set* set = this->giveDomain()->giveSet(setnum);
-        if ( set == nullptr ) OOFEM_ERROR("Contact segment can not find set no. " + setnum);
-
-        this->edges = set->giveBoundaryList();
-        if ( edges.giveSize() <= 0 ) OOFEM_WARNING("Contact segment's edge list is empty");
-
         return ContactSegment::initializeFrom(ir);
     }
 
@@ -161,7 +153,7 @@ REGISTER_ContactSegment(ElementEdgeContactSegment);
                 //in other iterations just resize normally
                 answer.resizeWithValues(answer.giveSize() + locarray.giveSize());
             }
-            for ( int i = answer.giveSize() - locarray.giveSize(); i < answer.giveSize(); i++ ) answer.at(i) = locarray.at(i);
+            for ( int i = answer.giveSize() - locarray.giveSize(); i < answer.giveSize(); i++ ) answer(i) = locarray(i);
         }
     }
 
@@ -264,6 +256,18 @@ ElementEdgeContactSegment :: updateYourself(TimeStep *tStep)
 }
 
 
+void
+ElementEdgeContactSegment :: postInitialize()
+{
+
+  Set* set = this->giveDomain()->giveSet(this->setnum);
+  if ( set == nullptr ) OOFEM_ERROR("Contact segment can not find set no. " + setnum);
+  this->edges = set->giveBoundaryList();
+  if ( edges.giveSize() <= 0 ) OOFEM_WARNING("Contact segment's edge list is empty");
+
+}
+
+  
   
 }
 

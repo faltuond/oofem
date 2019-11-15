@@ -63,6 +63,8 @@ namespace oofem {
       virtual void giveLocationArray(IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) = 0;
 
       virtual void updateYourself(TimeStep * tStep) = 0;
+
+      virtual void postInitialize(){;}
     };
 }
 

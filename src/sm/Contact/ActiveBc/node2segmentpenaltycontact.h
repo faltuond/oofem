@@ -31,22 +31,16 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+#ifndef node2nodepenaltycontact_h
+#define node2nodepenatycontact_h
 
-#pragma once
 
 #include "activebc.h"
-#include "node.h"
-#include "floatmatrix.h"
-#include "sm/Contact/ContactSegment/ContactSegment.h"
-#include "set.h"
-#include "domain.h"
-#include "node.h"
-#include "floatmatrix.h"
-#include "unknownnumberingscheme.h"
-#include "sparsemtrx.h"
-#include "classfactory.h"
-#include "sm/Elements/structuralelement.h"
+#include "sm/Contact/ContactSegment/contactsegment.h"
 
+
+///@name Input fields for _IFT_ContactElement
+//@{
 #define _IFT_Node2SegmentPenaltyContact_Name "n2spenaltycontact"
 #define _IFT_Node2SegmentPenaltyContact_penalty "penalty"
 #define _IFT_Node2SegmentPenaltyContact_useTangent "usetangent"
@@ -54,41 +48,59 @@
 #define _IFT_Node2SegmentPenaltyContact_segmentSet "segmentset"
 #define _IFT_Node2SegmentPenaltyContact_nodeSet "nodeset"
 
+
+
+//@}
+
 namespace oofem {
-    class Node2SegmentPenaltyContact : ActiveBoundaryCondition
-    {
-    public:
-        Node2SegmentPenaltyContact(int n, Domain *d);
-        ~Node2SegmentPenaltyContact();
+class Domain;
+class SparseMtrx;
+class TimeStep;
+class DofManager;
+class GaussPoint;
+class UnknownNumberingScheme;
+class FloatMatrix;
+class IntegrationRule;
+class ContactElement;
+class Node;
 
-        bool useTangent; ///< Determines if tangent should be used.
-        double penalty;
-        IntArray nodeSet;
-        IntArray segmentSet;
+class OOFEM_EXPORT Node2SegmentPenaltyContact : public ActiveBoundaryCondition
+{
+protected:
+  bool useTangent; ///< Determines if tangent should be used.
+  double penalty;
+  IntArray nodeSet;
+  IntArray segmentSet;
+public:
 
-        virtual IRResultType initializeFrom(InputRecord *ir);
+    /// Constructor.
+    Node2SegmentPenaltyContact(int n, Domain *d) : ActiveBoundaryCondition(n, d) { }
+    /// Destructor.
+    virtual ~Node2SegmentPenaltyContact() {};
 
-        virtual void assemble(SparseMtrx &answer, TimeStep *tStep,
-            CharType type, const UnknownNumberingScheme &r_s, const UnknownNumberingScheme &c_s, double scale = 1.0) override;
+    virtual IRResultType initializeFrom(InputRecord *ir);
 
-        virtual void assembleVector(FloatArray &answer, TimeStep *tStep,
-            CharType type, ValueModeType mode,
-            const UnknownNumberingScheme &s, FloatArray *eNorms = NULL) override;
+    virtual void assemble(SparseMtrx &answer, TimeStep *tStep,
+                          CharType type, const UnknownNumberingScheme &r_s, const UnknownNumberingScheme &c_s, double scale = 1.0) override;
 
-
-        virtual const char *giveClassName() const { return "Node2SegmentPenaltyContact"; }
-        virtual const char *giveInputRecordName() const { return _IFT_Node2SegmentPenaltyContact_Name; }
-
-
-        void computeTangentFromContact(FloatMatrix &answer, Node *node, ContactSegment *segment, TimeStep *tStep);
-        void computeGap(double &answer, Node *node, ContactSegment *segment, TimeStep *tStep);
-
-        void computeNormalMatrixAt(FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *TimeStep);
+    virtual void assembleVector(FloatArray &answer, TimeStep *tStep,
+                                CharType type, ValueModeType mode,
+                                const UnknownNumberingScheme &s, FloatArray *eNorms = NULL) override;
 
 
-        void computeExternalForcesFromContact(FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep);
+    virtual const char *giveClassName() const { return "Node2SegmentPenaltyContact"; }
+    virtual const char *giveInputRecordName() const { return _IFT_Node2SegmentPenaltyContact_Name; }
 
-        void giveLocationArrays(std::vector< IntArray > &rows, std::vector< IntArray > &cols, CharType type, const UnknownNumberingScheme &r_s, const UnknownNumberingScheme &c_s);
-    };
 
-}
+    void  computeTangentFromContact(FloatMatrix & answer, Node * node, ContactSegment * segment, TimeStep * tStep);
+
+    void computeGap(double &answer, Node *node, ContactSegment *segment, TimeStep *tStep);
+
+    void computeNormalMatrixAt(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * tStep);
+
+    void computeExternalForcesFromContact(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * tStep);
+
+    void giveLocationArrays(std :: vector< IntArray > &rows, std :: vector< IntArray > &cols, CharType type, const UnknownNumberingScheme &r_s, const UnknownNumberingScheme &c_s);
+};
+} // end namespace oofem
+#endif // node2nodecontact_h

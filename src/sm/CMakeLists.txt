@@ -324,6 +324,7 @@ set (sm_unsorted
     Contact/ActiveBc/node2nodepenaltycontact.C
     Contact/ActiveBc/node2nodelagrangianmultipliercontact.C
     Contact/ActiveBc/node2nodelagrangianmultipliercontact.C
+    Contact/ActiveBc/node2segmentpenaltycontact.C
     Contact/ContactSegment/elemedgecontactsegment.C
     Contact/ContactSegment/functioncontactsegment.C
     )

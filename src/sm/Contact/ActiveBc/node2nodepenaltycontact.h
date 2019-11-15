@@ -32,8 +32,8 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef node2nodecontact_h
-#define node2nodecontact_h
+#ifndef node2nodepenaltycontact_h
+#define node2nodepenatycontact_h
 
 
 #include "activebc.h"
