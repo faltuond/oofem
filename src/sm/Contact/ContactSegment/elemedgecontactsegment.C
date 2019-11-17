@@ -48,7 +48,7 @@ REGISTER_ContactSegment(ElementEdgeContactSegment);
         }
         else {
             //todo maybe force reestablishing closest edge? instead of automatically giving up
-            answer.resize(0);
+            answer.resize(2);
         }
     }
 
@@ -59,7 +59,7 @@ REGISTER_ContactSegment(ElementEdgeContactSegment);
         if ( closestEdge.giveSize() != 2 ) {
             //no closest edge means no contact
             //return zeros
-            answer.resize(6, 2);
+            answer.resize(2, 6);
             return;
         }
 
@@ -81,7 +81,7 @@ REGISTER_ContactSegment(ElementEdgeContactSegment);
 
         elem->computeEdgeNMatrix(N, edgePos, contactPointCoords);
 
-        answer.resize(N.giveNumberOfRows() + 2, N.giveNumberOfColumns());
+        answer.resize(N.giveNumberOfRows(), N.giveNumberOfColumns()+2);
         answer.zero();
 
         FloatMatrix extension(2, 2);
@@ -224,15 +224,15 @@ REGISTER_ContactSegment(ElementEdgeContactSegment);
         normalVector.at(2) = lineVector.at(1);
 
         //thus we have equation of the edge line
-        double ae = lineVector.at(1);
-        double be = lineVector.at(2);
+        double ae = normalVector.at(1);
+        double be = normalVector.at(2);
         double ce = -ae * linePoint1.at(1) - be * linePoint1.at(2);
 
         //now we have to find the intersecting point
         double divider = ae * bn - an * be;//should only be zero if lines are parallel
         FloatArray contactPoint(2);
-        contactPoint.at(1) = (ce*bn - cn*be) / divider;
-        contactPoint.at(2) = (ae*cn - an*ce) / divider;
+        contactPoint.at(1) = -(ce*bn - cn*be) / divider;
+        contactPoint.at(2) = -(ae*cn - an*ce) / divider;
 
         answer.beDifferenceOf(contactPoint, externalPoint);
 
