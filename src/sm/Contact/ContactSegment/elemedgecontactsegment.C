@@ -44,7 +44,8 @@ REGISTER_ContactSegment(ElementEdgeContactSegment);
         if ( inbetween ) {
             answer = normal;
             //normalize
-            answer.times(1. / answer.computeNorm());
+            double norm = answer.computeNorm();
+            if( norm > 1.0e-8 ) answer.times(1. / norm);
         }
         else {
             //todo maybe force reestablishing closest edge? instead of automatically giving up
@@ -79,7 +80,9 @@ REGISTER_ContactSegment(ElementEdgeContactSegment);
 
         //all the previous just to compute the contact point...
 
-        elem->computeEdgeNMatrix(N, edgePos, contactPointCoords);
+        FloatArray lcoords;
+        elem->giveInterpolation()->global2local(lcoords, contactPointCoords, FEIElementGeometryWrapper(elem));
+        elem->computeEdgeNMatrix(N, edgePos, lcoords);
 
         answer.resize(N.giveNumberOfRows(), N.giveNumberOfColumns()+2);
         answer.zero();

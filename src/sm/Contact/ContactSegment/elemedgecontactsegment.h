@@ -40,6 +40,7 @@
 #include "inputrecord.h"
 #include "Elements/structuralelement.h"
 #include "set.h"
+#include "feinterpol.h"
 
 #define _IFT_ElementEdgeContactSegment_Name "elementedgecontactsegment"
 #define _IFT_ElementEdgeContactSegment_edgeSet "edgeset"
