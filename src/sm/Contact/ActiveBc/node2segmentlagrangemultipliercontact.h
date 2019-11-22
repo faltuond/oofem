@@ -39,6 +39,11 @@
 #include "activebc.h"
 #include "Contact/ContactSegment/contactsegment.h"
 #include "classfactory.h"
+#include "masterdof.h"
+#include "domain.h"
+#include "floatmatrix.h"
+#include "sparsemtrx.h"
+#include "unknownnumberingscheme.h"
 
 
  ///@name Input fields for _IFT_ContactElement
@@ -73,6 +78,7 @@ namespace oofem {
         IntArray nodeSet;
         IntArray segmentSet;
         std::vector<  DofManager * >lmdm;
+        int lm_num; ///< Determines the number of Lagrange multiplier DOFs (because all nodes are checked against all segments)
     public:
 
         /// Constructor.
@@ -89,7 +95,7 @@ namespace oofem {
         virtual const char *giveClassName() const { return "Node2SegmentLagrangianMultiplierContact"; }
         virtual const char *giveInputRecordName() const { return _IFT_Node2SegmentLagrangianMultiplierContact_Name; }
 
-        int giveNumberOfInternalDofManagers() override { return segmentSet.giveSize(); }
+        int giveNumberOfInternalDofManagers() override { return lm_num; }
         DofManager *giveInternalDofManager(int i) override { return this->lmdm.at(i - 1); }
 
         void giveLocationArrays(std::vector< IntArray > &rows, std::vector< IntArray > &cols, CharType type, const UnknownNumberingScheme &r_s, const UnknownNumberingScheme &c_s) override;
