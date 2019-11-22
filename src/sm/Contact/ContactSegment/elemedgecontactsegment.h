@@ -44,7 +44,7 @@
 
 #define _IFT_ElementEdgeContactSegment_Name "elementedgecontactsegment"
 #define _IFT_ElementEdgeContactSegment_edgeSet "edgeset"
-//#define _IFT_ElementEdgeContactSegment_elemSet "elemset"
+ //#define _IFT_ElementEdgeContactSegment_elemSet "elemset"
 
 namespace oofem {
     class ElementEdgeContactSegment : public ContactSegment
@@ -56,22 +56,22 @@ namespace oofem {
         IRResultType initializeFrom(InputRecord * ir);
 
         //returns normalized n, which is an normal vector of contact
-	void computeNormal(FloatArray& answer, Node * node, TimeStep* tstep) override;
+        void computeNormal(FloatArray& answer, Node * node, TimeStep* tstep) override;
 
         //returns an extended N (aka A) matrix, integrated at point of contact of given node
-	void computeExtendedNMatrix(FloatMatrix& answer, Node* node, TimeStep * tStep) override;
+        void computeExtendedNMatrix(FloatMatrix& answer, Node* node, TimeStep * tStep) override;
 
         //computes the penetration of node given 
-	double computePenetration(Node * node, TimeStep * tStep) override;
-	
+        double computePenetration(Node * node, TimeStep * tStep) override;
+
         int setnum;
-	
-	void giveLocationArray(IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
 
-	void updateYourself(TimeStep * tStep) override;
+        void giveLocationArray(IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
 
-	const char *giveClassName() const override { return "Elemedgecontactsegment"; }
-	const char *giveInputRecordName() const override { return _IFT_ElementEdgeContactSegment_Name; }
+        void updateYourself(TimeStep * tStep) override;
+
+        const char *giveClassName() const override { return "Elemedgecontactsegment"; }
+        const char *giveInputRecordName() const override { return _IFT_ElementEdgeContactSegment_Name; }
     protected:
         IntArray edges;
         std::vector<Node*> knownNodes;
@@ -94,8 +94,8 @@ namespace oofem {
             }
             return -1;
         }
-	void postInitialize() override;
-	
+        void postInitialize() override;
+
     };
 
 }

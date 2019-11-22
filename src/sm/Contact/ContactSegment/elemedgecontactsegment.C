@@ -89,6 +89,7 @@ REGISTER_ContactSegment(ElementEdgeContactSegment);
 
         FloatMatrix extension(2, 2);
         extension.beUnitMatrix();
+        extension.times(-1.);
 
         answer.setSubMatrix(N, 1, 1);
         answer.setSubMatrix(extension, 1, N.giveNumberOfColumns() + 1);
