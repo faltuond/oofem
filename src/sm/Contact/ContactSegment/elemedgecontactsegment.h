@@ -64,18 +64,17 @@ namespace oofem {
         //computes the penetration of node given 
         double computePenetration(Node * node, TimeStep * tStep) override;
 
-        int setnum;
-
         void giveLocationArray(IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
 
         void updateYourself(TimeStep * tStep) override;
 
         const char *giveClassName() const override { return "Elemedgecontactsegment"; }
         const char *giveInputRecordName() const override { return _IFT_ElementEdgeContactSegment_Name; }
-    protected:
+    private:
         IntArray edges;
         std::vector<Node*> knownNodes;
         std::vector<IntArray> knownClosestEdges;
+        int setnum;
 
         //gives the closest edge to a given node in the form of an IntArray(elempos,edgepos)
         //only computes it again if it wasn't determined for this node in this solution step yet

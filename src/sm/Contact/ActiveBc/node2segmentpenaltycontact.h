@@ -66,7 +66,7 @@ class Node;
 
 class OOFEM_EXPORT Node2SegmentPenaltyContact : public ActiveBoundaryCondition
 {
-protected:
+private:
   bool useTangent; ///< Determines if tangent should be used.
   double penalty;
   IntArray nodeSet;
@@ -91,7 +91,9 @@ public:
     virtual const char *giveClassName() const { return "Node2SegmentPenaltyContact"; }
     virtual const char *giveInputRecordName() const { return _IFT_Node2SegmentPenaltyContact_Name; }
 
+    void giveLocationArrays(std::vector< IntArray > &rows, std::vector< IntArray > &cols, CharType type, const UnknownNumberingScheme &r_s, const UnknownNumberingScheme &c_s) override;
 
+private:
     void  computeTangentFromContact(FloatMatrix & answer, Node * node, ContactSegment * segment, TimeStep * tStep);
 
     void computeGap(double &answer, Node *node, ContactSegment *segment, TimeStep *tStep);
@@ -99,8 +101,7 @@ public:
     void computeNormalMatrixAt(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * tStep);
 
     void computeExternalForcesFromContact(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * tStep);
-
-    void giveLocationArrays(std :: vector< IntArray > &rows, std :: vector< IntArray > &cols, CharType type, const UnknownNumberingScheme &r_s, const UnknownNumberingScheme &c_s);
+        
 };
 } // end namespace oofem
 #endif // node2nodecontact_h
