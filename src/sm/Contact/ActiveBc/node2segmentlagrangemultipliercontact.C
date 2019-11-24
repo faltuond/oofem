@@ -72,10 +72,8 @@ namespace oofem {
 
     void Node2SegmentLagrangianMultiplierContact::assembleVector(FloatArray & answer, TimeStep * tStep, CharType type, ValueModeType mode, const UnknownNumberingScheme & s, FloatArray * eNorms)
     {
-
-        //IntArray dofIdArray = {D_u, D_v, D_w};
         IntArray dofIdArray = {
-            D_u, D_v
+          D_u, D_v
         };
 
         if ( type == InternalForcesVector ) {

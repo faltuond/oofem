@@ -4,9 +4,9 @@
 namespace oofem {
 
 
-REGISTER_ContactSegment(ElementEdgeContactSegment);
+    REGISTER_ContactSegment(ElementEdgeContactSegment);
 
-  
+
     IRResultType ElementEdgeContactSegment::initializeFrom(InputRecord * ir)
     {
         IRResultType result;
@@ -45,7 +45,7 @@ REGISTER_ContactSegment(ElementEdgeContactSegment);
             answer = normal;
             //normalize
             double norm = answer.computeNorm();
-            if( norm > 1.0e-8 ) answer.times(1. / norm);
+            if ( norm > 1.0e-8 ) answer.times(1. / norm);
         }
         else {
             //todo maybe force reestablishing closest edge? instead of automatically giving up
@@ -66,7 +66,7 @@ REGISTER_ContactSegment(ElementEdgeContactSegment);
 
         StructuralElement* elem = (StructuralElement*)this->giveDomain()->giveElement(closestEdge.at(1));
         int edgePos = closestEdge.at(2);
-        
+
         FloatMatrix N;
         FloatArray contactPointCoords, dummyNormal, nodeCoords, edgeNode1Coords, edgeNode2Coords;
         IntArray edgeNodes;
@@ -84,7 +84,7 @@ REGISTER_ContactSegment(ElementEdgeContactSegment);
         elem->giveInterpolation()->global2local(lcoords, contactPointCoords, FEIElementGeometryWrapper(elem));
         elem->computeEdgeNMatrix(N, edgePos, lcoords);
 
-        answer.resize(N.giveNumberOfRows(), N.giveNumberOfColumns()+2);
+        answer.resize(N.giveNumberOfRows(), N.giveNumberOfColumns() + 2);
         answer.zero();
 
         FloatMatrix extension(2, 2);
@@ -134,31 +134,22 @@ REGISTER_ContactSegment(ElementEdgeContactSegment);
         return answer;
     }
 
-    void ElementEdgeContactSegment::giveLocationArray( IntArray & dofIdArray, IntArray & answer, const UnknownNumberingScheme & c_s)
+    void ElementEdgeContactSegment::giveLocationArray(const IntArray & dofIdArray, IntArray & answer, const UnknownNumberingScheme & c_s)
     {
-        answer.resize(0);
-        //iterate over all segments
-        for ( int pos = 0; pos < edges.giveSize() / 2; pos++ ) {
-            StructuralElement* element = (StructuralElement*)this->giveDomain()->giveElement(edges(pos * 2));
-            int edgePos = pos * 2 + 1;
+        if ( lastEdge.giveSize() == 2 ) {
+            //returns the location arrays of the last contact segment worked with
+            StructuralElement* element = (StructuralElement*)this->giveDomain()->giveElement(lastEdge.at(1));
+            int edgePos = lastEdge.at(2);
 
             IntArray boundaryNodes;
-            element->giveBoundaryEdgeNodes(boundaryNodes, edges(edgePos));
-
-            IntArray locarray;
-            element->giveBoundaryLocationArray(locarray, boundaryNodes, c_s, &dofIdArray);
-
-            //add locarray to answer
-            if ( pos == 0 ) {
-                //in first iteration, try to guess future size of answer
-                answer.resizeWithValues(answer.giveSize() + locarray.giveSize(), locarray.giveSize() * (edges.giveSize()/2));
-            }
-            else {
-                //in other iterations just resize normally
-                answer.resizeWithValues(answer.giveSize() + locarray.giveSize());
-            }
-            for ( int i = answer.giveSize() - locarray.giveSize(); i < answer.giveSize(); i++ ) answer(i) = locarray(i);
+            element->giveBoundaryEdgeNodes(boundaryNodes, edgePos);
+            element->giveBoundaryLocationArray(answer, boundaryNodes, c_s, nullptr);
         }
+        else {
+            //if no segment was worked with, returns zeros
+            answer.resize(4);
+        }
+
     }
 
     void ElementEdgeContactSegment::giveClosestEdge(IntArray & answer, Node * node, TimeStep * tStep)
@@ -166,6 +157,7 @@ REGISTER_ContactSegment(ElementEdgeContactSegment);
         int knownIndex = giveIndexOfKnownNode(node);
         if ( knownIndex != -1 && knownClosestEdges.at(knownIndex).giveSize() == 2 ) {
             answer = knownClosestEdges.at(knownIndex);
+            lastEdge = answer;
             return;
         }
         //if previous if failed, it means that we don't know the closest edge to this node yet
@@ -203,9 +195,10 @@ REGISTER_ContactSegment(ElementEdgeContactSegment);
         if ( answerSize == -1. ) answer.resize(0);
         else {
             knownNodes.push_back(node);
-            IntArray answerToStore(answer); //make copy to store to prevent it going out of scope
+            IntArray answerToStore(answer); //make copy to store to prevent it going out of scope - necessary??
             knownClosestEdges.push_back(answerToStore);
         }
+        lastEdge = answer;
     }
 
     bool ElementEdgeContactSegment::computeDistanceVector(FloatArray & answer, const FloatArray & externalPoint, const FloatArray & linePoint1, const FloatArray & linePoint2, /*optional*/ FloatArray * contactPointCoords)
@@ -235,8 +228,8 @@ REGISTER_ContactSegment(ElementEdgeContactSegment);
         //now we have to find the intersecting point
         double divider = ae * bn - an * be;//should only be zero if lines are parallel
         FloatArray contactPoint(2);
-        contactPoint.at(1) = -(ce*bn - cn*be) / divider;
-        contactPoint.at(2) = -(ae*cn - an*ce) / divider;
+        contactPoint.at(1) = -(ce*bn - cn * be) / divider;
+        contactPoint.at(2) = -(ae*cn - an * ce) / divider;
 
         answer.beDifferenceOf(contactPoint, externalPoint);
 
@@ -251,28 +244,27 @@ REGISTER_ContactSegment(ElementEdgeContactSegment);
         return abs(contactPoint(0) - linePoint1(0)) < lineLength && abs(contactPoint(0) - linePoint2(0)) < lineLength;
     }
 
-void
-ElementEdgeContactSegment :: updateYourself(TimeStep *tStep)
-// Updates the receiver at end of step.
-{
-    knownNodes.clear();
-    knownClosestEdges.clear();
-}
+    void ElementEdgeContactSegment::updateYourself(TimeStep *tStep)
+        // Updates the receiver at end of step.
+    {
+        knownNodes.clear();
+        knownClosestEdges.clear();
+        lastEdge.resize(0);
+    }
 
 
-void
-ElementEdgeContactSegment :: postInitialize()
-{
+    void ElementEdgeContactSegment::postInitialize()
+    {
 
-  Set* set = this->giveDomain()->giveSet(this->setnum);
-  if ( set == nullptr ) OOFEM_ERROR("Contact segment can not find set no. " + setnum);
-  this->edges = set->giveBoundaryList();
-  if ( edges.giveSize() <= 0 ) OOFEM_WARNING("Contact segment's edge list is empty");
+        Set* set = this->giveDomain()->giveSet(this->setnum);
+        if ( set == nullptr ) OOFEM_ERROR("Contact segment can not find set no. " + setnum);
+        this->edges = set->giveBoundaryList();
+        if ( edges.giveSize() <= 0 ) OOFEM_WARNING("Contact segment's edge list is empty");
 
-}
+    }
 
-  
-  
+
+
 }
 
 

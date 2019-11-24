@@ -38,10 +38,10 @@ namespace oofem {
         return 0.0;
     }
 
-    void FunctionContactSegment::giveLocationArray(IntArray & dofIdArray, IntArray & s_loc, const UnknownNumberingScheme & c_s)
+    void FunctionContactSegment::giveLocationArray(const IntArray & dofIdArray, IntArray & s_loc, const UnknownNumberingScheme & c_s)
     {
-        s_loc.resize(0);
-        //represents a function, does not have any dofs
+        s_loc.resize(4);
+        //represents a function, does not have any dofs, so returns an array of zeros
     }
 
     void FunctionContactSegment::updateYourself(TimeStep * tStep)

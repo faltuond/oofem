@@ -61,9 +61,7 @@ namespace oofem {
     }
 
 
-
-    void
-        Node2SegmentPenaltyContact::assemble(SparseMtrx &answer, TimeStep *tStep,
+    void Node2SegmentPenaltyContact::assemble(SparseMtrx &answer, TimeStep *tStep,
             CharType type, const UnknownNumberingScheme &r_s, const UnknownNumberingScheme &c_s, double scale)
     {
         if ( !this->useTangent || type != TangentStiffnessMatrix ) {
@@ -84,20 +82,20 @@ namespace oofem {
                 Node* node = this->giveDomain()->giveNode(nodeSet.at(nodePos));
                 ContactSegment* segment = (this->giveDomain()->giveContactSegment(segmentSet.at(segmentPos)));
 
+                this->computeTangentFromContact(K, node, segment, tStep);
+
                 //assembling for both node and segment
                 node->giveLocationArray(dofIdArray, node_loc, r_s);
                 segment->giveLocationArray(dofIdArray, loc, r_s);
                 loc.followedBy(node_loc);
 
-                this->computeTangentFromContact(K, node, segment, tStep);
                 answer.assemble(loc, K);
             }
         }
 
     }
 
-    void
-        Node2SegmentPenaltyContact::assembleVector(FloatArray &answer, TimeStep *tStep,
+    void Node2SegmentPenaltyContact::assembleVector(FloatArray &answer, TimeStep *tStep,
             CharType type, ValueModeType mode,
             const UnknownNumberingScheme &s, FloatArray *eNorms)
     {
@@ -118,12 +116,13 @@ namespace oofem {
                 Node* node = this->giveDomain()->giveNode(nodeSet.at(nodePos));
                 ContactSegment* segment = (this->giveDomain()->giveContactSegment(segmentSet.at(segmentPos)));
 
+                this->computeExternalForcesFromContact(fext, node, segment, tStep);
+
                 //assembling for both node and segment
                 node->giveLocationArray(dofIdArray, node_loc, s);
                 segment->giveLocationArray(dofIdArray, loc, s);
                 loc.followedBy(node_loc);
 
-                this->computeExternalForcesFromContact(fext, node, segment, tStep);
                 answer.assemble(fext, loc);
             }
 
@@ -131,13 +130,7 @@ namespace oofem {
 
     }
 
-
-
-
-
-
-    void
-        Node2SegmentPenaltyContact::giveLocationArrays(std::vector< IntArray > &rows, std::vector< IntArray > &cols, CharType type, const UnknownNumberingScheme &r_s, const UnknownNumberingScheme &c_s)
+    void Node2SegmentPenaltyContact::giveLocationArrays(std::vector< IntArray > &rows, std::vector< IntArray > &cols, CharType type, const UnknownNumberingScheme &r_s, const UnknownNumberingScheme &c_s)
     {
         //returns all possible combinations of dof that can theoretically be triggered by contact
         //of any segment with any node. Room for optimization aplenty...
@@ -170,8 +163,7 @@ namespace oofem {
 
 
 
-    void
-        Node2SegmentPenaltyContact::computeGap(double & answer, Node *node, ContactSegment *segment, TimeStep * tStep)
+    void Node2SegmentPenaltyContact::computeGap(double & answer, Node *node, ContactSegment *segment, TimeStep * tStep)
     {
         answer = segment->computePenetration(node, tStep);
     }
@@ -196,12 +188,9 @@ namespace oofem {
         //normal should be given just as N^t * n;
         answer.beProductOf(extendedNTranspose, normal);
     }
-
-
-
-
-    void
-        Node2SegmentPenaltyContact::computeTangentFromContact(FloatMatrix & answer, Node * node, ContactSegment * segment, TimeStep * tStep)
+         
+    
+    void Node2SegmentPenaltyContact::computeTangentFromContact(FloatMatrix & answer, Node * node, ContactSegment * segment, TimeStep * tStep)
     {
         //considering that the tangent is given as
         //int across seg (N^T * (n x n) * N), which is equivalent to
@@ -218,8 +207,7 @@ namespace oofem {
     }
 
 
-    void
-        Node2SegmentPenaltyContact::computeExternalForcesFromContact(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * tStep)
+    void Node2SegmentPenaltyContact::computeExternalForcesFromContact(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * tStep)
     {
         double gap;
         this->computeGap(gap, node, segment, tStep);

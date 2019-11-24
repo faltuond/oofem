@@ -64,7 +64,7 @@ namespace oofem {
         //computes the penetration of node given 
         double computePenetration(Node * node, TimeStep * tStep) override;
 
-        void giveLocationArray(IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
+        void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
 
         void updateYourself(TimeStep * tStep) override;
 
@@ -72,6 +72,7 @@ namespace oofem {
         const char *giveInputRecordName() const override { return _IFT_ElementEdgeContactSegment_Name; }
     private:
         IntArray edges;
+        IntArray lastEdge; //last edge worked with
         std::vector<Node*> knownNodes;
         std::vector<IntArray> knownClosestEdges;
         int setnum;
