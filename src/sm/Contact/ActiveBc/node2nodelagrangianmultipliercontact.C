@@ -280,8 +280,8 @@ Node2NodeLagrangianMultiplierContact :: giveLocationArrays(std :: vector< IntArr
         rows [ 0 + 3 * ( pos - 1 ) ] = r_loc;
         cols [ 0 + 3 * ( pos - 1 ) ] = lambdaeq.at(pos - 1);
         // row block
-        cols [ 1 + 3 * ( pos - 1 ) ] = c_loc;
-        rows [ 1 + 3 * ( pos - 1 ) ] = lambdaeq.at(pos - 1);
+        rows [ 1 + 3 * ( pos - 1 ) ] = c_loc;
+        cols [ 1 + 3 * ( pos - 1 ) ] = lambdaeq.at(pos - 1);
         // diagonal enry (some sparse mtrx implementation requaire this)
         rows [ 2 + 3 * ( pos - 1 ) ] = lambdaeq.at(pos - 1);
         cols [ 2 + 3 * ( pos - 1 ) ] = lambdaeq.at(pos - 1);

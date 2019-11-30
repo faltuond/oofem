@@ -148,8 +148,8 @@ namespace oofem {
                 rows[0 + 3 * (lmpos - 1)] = r_loc;
                 cols[0 + 3 * (lmpos - 1)] = lambdaeq.at(lmpos - 1);
                 // row block
-                cols[1 + 3 * (lmpos - 1)] = c_loc;
-                rows[1 + 3 * (lmpos - 1)] = lambdaeq.at(lmpos - 1);
+                rows[1 + 3 * (lmpos - 1)] = c_loc;
+                cols[1 + 3 * (lmpos - 1)] = lambdaeq.at(lmpos - 1);
                 // diagonal enry (some sparse mtrx implementation requaire this)
                 rows[2 + 3 * (lmpos - 1)] = lambdaeq.at(lmpos - 1);
                 cols[2 + 3 * (lmpos - 1)] = lambdaeq.at(lmpos - 1);
