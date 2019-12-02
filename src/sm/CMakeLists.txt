@@ -328,6 +328,7 @@ set (sm_unsorted
     Contact/ActiveBc/node2segmentlagrangemultipliercontact.C
     Contact/ContactSegment/elemedgecontactsegment.C
     Contact/ContactSegment/functioncontactsegment.C
+    Contact/ContactSegment/quadelemedgecontactsegment.C
     )
 
   
