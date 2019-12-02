@@ -70,6 +70,8 @@ namespace oofem {
 
         const char *giveClassName() const override { return "Elemedgecontactsegment"; }
         const char *giveInputRecordName() const override { return _IFT_ElementEdgeContactSegment_Name; }
+
+        void postInitialize() override;
     private:
         IntArray edges;
         IntArray lastEdge; //last edge worked with
@@ -94,7 +96,6 @@ namespace oofem {
             }
             return -1;
         }
-        void postInitialize() override;
 
     };
 

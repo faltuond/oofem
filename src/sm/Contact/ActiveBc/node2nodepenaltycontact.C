@@ -95,8 +95,7 @@ namespace oofem {
         }
     }
 
-    void
-        Node2NodePenaltyContact::assembleVector(FloatArray &answer, TimeStep *tStep,
+    void Node2NodePenaltyContact::assembleVector(FloatArray &answer, TimeStep *tStep,
             CharType type, ValueModeType mode,
             const UnknownNumberingScheme &s, FloatArray *eNorms)
     {
@@ -133,8 +132,7 @@ namespace oofem {
 
 
 
-    void
-        Node2NodePenaltyContact::giveLocationArrays(std::vector< IntArray > &rows, std::vector< IntArray > &cols, CharType type, const UnknownNumberingScheme &r_s, const UnknownNumberingScheme &c_s)
+    void Node2NodePenaltyContact::giveLocationArrays(std::vector< IntArray > &rows, std::vector< IntArray > &cols, CharType type, const UnknownNumberingScheme &r_s, const UnknownNumberingScheme &c_s)
     {
         IntArray r_loc, c_loc;
         rows.resize(masterSet.giveSize());
@@ -164,8 +162,7 @@ namespace oofem {
 
 
 
-    void
-        Node2NodePenaltyContact::computeTangentFromContact(FloatMatrix &answer, Node *masterNode, Node *slaveNode, TimeStep *tStep)
+    void Node2NodePenaltyContact::computeTangentFromContact(FloatMatrix &answer, Node *masterNode, Node *slaveNode, TimeStep *tStep)
     {
         double gap;
         FloatArray Nv;
@@ -178,8 +175,7 @@ namespace oofem {
         }
     }
 
-    void
-        Node2NodePenaltyContact::computeGap(double &answer, Node *masterNode, Node *slaveNode, TimeStep *tStep)
+    void Node2NodePenaltyContact::computeGap(double &answer, Node *masterNode, Node *slaveNode, TimeStep *tStep)
     {
         FloatArray xs, xm, uS, uM;
         xs = *slaveNode->giveCoordinates();
@@ -203,8 +199,7 @@ namespace oofem {
     }
 
 
-    void
-        Node2NodePenaltyContact::computeNormalMatrixAt(FloatArray &answer, Node *masterNode, Node *slaveNode, TimeStep *TimeStep)
+    void Node2NodePenaltyContact::computeNormalMatrixAt(FloatArray &answer, Node *masterNode, Node *slaveNode, TimeStep *TimeStep)
     {
         FloatArray xs, xm;
         xs = *slaveNode->giveCoordinates();
@@ -227,8 +222,7 @@ namespace oofem {
     }
 
 
-    void
-        Node2NodePenaltyContact::computeExternalForcesFromContact(FloatArray &answer, Node *masterNode, Node *slaveNode, TimeStep *tStep)
+    void Node2NodePenaltyContact::computeExternalForcesFromContact(FloatArray &answer, Node *masterNode, Node *slaveNode, TimeStep *tStep)
     {
         double gap;
         this->computeGap(gap, masterNode, slaveNode, tStep);

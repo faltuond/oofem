@@ -99,7 +99,7 @@ namespace oofem {
         DofManager *giveInternalDofManager(int i) override { return this->lmdm.at(i - 1); }
 
         void giveLocationArrays(std::vector< IntArray > &rows, std::vector< IntArray > &cols, CharType type, const UnknownNumberingScheme &r_s, const UnknownNumberingScheme &c_s) override;
-        void giveLagrangianMultiplierLocationArray(const UnknownNumberingScheme &r_s, std::vector< IntArray > &answer);
+        
 
     private:
         double computeTangentFromContact(FloatMatrix &answer, Node *node, ContactSegment *segment, TimeStep *tStep);
@@ -109,6 +109,8 @@ namespace oofem {
         void computeNormalMatrixAt(FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *TimeStep);
 
         void computeExternalForcesFromContact(FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep);
+
+        void giveLagrangianMultiplierLocationArray(const UnknownNumberingScheme &r_s, std::vector< IntArray > &answer);
 
     };
 } // end namespace oofem

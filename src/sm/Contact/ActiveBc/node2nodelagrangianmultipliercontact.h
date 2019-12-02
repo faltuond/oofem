@@ -104,9 +104,11 @@ namespace oofem {
 
 
         void computeExternalForcesFromContact(FloatArray &answer, Node *masterNode, Node *slaveNode, TimeStep *tStep);
+
+        void giveLagrangianMultiplierLocationArray(const UnknownNumberingScheme &r_s, std::vector< IntArray > &answer);
+
     public:
         void giveLocationArrays(std::vector< IntArray > &rows, std::vector< IntArray > &cols, CharType type, const UnknownNumberingScheme &r_s, const UnknownNumberingScheme &c_s) override;
-        void giveLagrangianMultiplierLocationArray(const UnknownNumberingScheme &r_s, std::vector< IntArray > &answer);
     };
 } // end namespace oofem
-#endif // node2nodecontact_h
+#endif // node2nodelagrangianmultipliercontact_h

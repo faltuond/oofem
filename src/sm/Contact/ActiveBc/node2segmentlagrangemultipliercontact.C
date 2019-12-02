@@ -97,6 +97,12 @@ namespace oofem {
                     node->giveLocationArray(dofIdArray, n_loc, s);
                     loc.followedBy(n_loc);
 
+                    //TEST
+                    /*double gap;
+                    this->computeGap(gap, node, segment, tStep);
+                    if ( gap >= 0. ) n.times(0.);*/
+                    //TEST
+
                     answer.assemble(n, loc);
 
                     lmpos++;
