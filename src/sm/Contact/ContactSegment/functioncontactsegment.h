@@ -42,8 +42,9 @@
 #include "set.h"
 
 #define _IFT_FunctionContactSegment_Name "functioncontactsegment"
-#define _IFT_FunctionContactSegment_function "function"
- //#define _IFT_ElementEdgeContactSegment_elemSet "elemset"
+//#define _IFT_FunctionContactSegment_function "function"
+#define _IFT_FunctionContactSegment_centerpoint "centerpoint"
+#define _IFT_FunctionContactSegment_radius "radius"
 
 namespace oofem {
     class FunctionContactSegment : public ContactSegment
@@ -65,10 +66,18 @@ namespace oofem {
 
         void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
 
-        void updateYourself(TimeStep * tStep) override;
+        //void updateYourself(TimeStep * tStep) override;
 
-	const char *giveClassName() const override { return "Functioncontactsegment"; }
-	const char *giveInputRecordName() const override { return _IFT_FunctionContactSegment_Name; }
+	    const char *giveClassName() const override { return "Functioncontactsegment"; }
+	    const char *giveInputRecordName() const override { return _IFT_FunctionContactSegment_Name; }
+
+    private:
+        FloatArray centerPoint;
+        double radius;
+
+    protected:
+
+        void computeDistanceVector(FloatArray& answer, const FloatArray& nodeCoords);
     };
 
 }
