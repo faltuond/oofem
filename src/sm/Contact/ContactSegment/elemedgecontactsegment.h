@@ -68,7 +68,7 @@ namespace oofem {
 
         void updateYourself(TimeStep * tStep) override;
 
-        const char *giveClassName() const override { return "Elemedgecontactsegment"; }
+        const char *giveClassName() const override { return "Elementedgecontactsegment"; }
         const char *giveInputRecordName() const override { return _IFT_ElementEdgeContactSegment_Name; }
 
         void postInitialize() override;

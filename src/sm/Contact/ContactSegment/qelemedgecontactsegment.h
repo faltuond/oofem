@@ -43,15 +43,15 @@
 #include "feinterpol.h"
 #include "classfactory.h"
 
-#define _IFT_QuadraticElementEdgeContactSegment_Name "quadraticelementedgecontactsegment"
-#define _IFT_QuadraticElementEdgeContactSegment_edgeSet "edgeset"
+#define _IFT_QElementEdgeContactSegment_Name "qelementedgecontactsegment"
+#define _IFT_QElementEdgeContactSegment_edgeSet "edgeset"
 
 namespace oofem {
-    class QuadraticElementEdgeContactSegment : public ContactSegment
+    class QElementEdgeContactSegment : public ContactSegment
     {
     public:
-        QuadraticElementEdgeContactSegment(int n, Domain *aDomain) : ContactSegment(n, aDomain) { ; }
-        ~QuadraticElementEdgeContactSegment() {};
+        QElementEdgeContactSegment(int n, Domain *aDomain) : ContactSegment(n, aDomain) { ; }
+        ~QElementEdgeContactSegment() {};
 
         IRResultType initializeFrom(InputRecord * ir);
 
@@ -68,8 +68,8 @@ namespace oofem {
 
         void updateYourself(TimeStep * tStep) override;
 
-        const char *giveClassName() const override { return "Elemedgecontactsegment"; }
-        const char *giveInputRecordName() const override { return _IFT_QuadraticElementEdgeContactSegment_Name; }
+        const char *giveClassName() const override { return "Qelemenetedgecontactsegment"; }
+        const char *giveInputRecordName() const override { return _IFT_QElementEdgeContactSegment_Name; }
 
         void postInitialize() override;
     private:
