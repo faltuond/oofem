@@ -40,32 +40,34 @@
 #include "inputrecord.h"
 #include "Elements/structuralelement.h"
 #include "set.h"
+#include "functioncontactsegment.h"
+#include "classfactory.h"
 
+#define _IFT_CircleContactSegment_Name "circlecontactsegment"
+ //#define _IFT_FunctionContactSegment_function "function"
+#define _IFT_CircleContactSegment_centerpoint "centerpoint"
+#define _IFT_CircleContactSegment_radius "radius"
 
 namespace oofem {
-
-    //virtual class parenting all analytical function contact segments
-    //all children must implement computeDistanceVector() - and need not implement anything else
-    class FunctionContactSegment : public ContactSegment
+    class CircleContactSegment : public FunctionContactSegment
     {
     public:
-        FunctionContactSegment(int n, Domain *aDomain) : ContactSegment(n, aDomain) { ; }
-        ~FunctionContactSegment() {};
+        CircleContactSegment(int n, Domain *aDomain) : FunctionContactSegment(n, aDomain) { ; }
+        ~CircleContactSegment() {};
 
-        //returns normalized n, which is an normal vector of contact
-        void computeNormal(FloatArray& answer, Node * node, TimeStep* tstep) override;
+        IRResultType initializeFrom(InputRecord * ir) override;
 
-        //returns an extended N (aka A) matrix, integrated at point of contact of given node
-        void computeExtendedNMatrix(FloatMatrix& answer, Node* node, TimeStep * tStep) override;
+        const char *giveClassName() const override { return "Circlecontactsegment"; }
+        const char *giveInputRecordName() const override { return _IFT_CircleContactSegment_Name; }
 
-        //computes the penetration of node given 
-        double computePenetration(Node * node, TimeStep * tStep) override;
-
-        void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
+    private:
+        double radius;
+        FloatArray centerPoint;
 
     protected:
 
-        virtual void computeDistanceVector(FloatArray& answer, const FloatArray& nodeCoords) = 0;
+        void computeDistanceVector(FloatArray& answer, const FloatArray& nodeCoords) override;
+
     };
 
 }

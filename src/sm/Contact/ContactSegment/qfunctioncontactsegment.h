@@ -35,37 +35,34 @@
 
 
 #pragma once
-#include "contactsegment.h"
-#include "node.h"
-#include "inputrecord.h"
-#include "Elements/structuralelement.h"
-#include "set.h"
+#include "classfactory.h"
+#include "nrfunctioncontactsegment2d.h"
 
+#define _IFT_QFunctionContactSegment_Name "qfunctioncontactsegment"
+#define _IFT_QFunctionContactSegment_a "a"
+#define _IFT_QFunctionContactSegment_b "b"
+#define _IFT_QFunctionContactSegment_c "c"
 
 namespace oofem {
-
-    //virtual class parenting all analytical function contact segments
-    //all children must implement computeDistanceVector() - and need not implement anything else
-    class FunctionContactSegment : public ContactSegment
+    class QFunctionContactSegment : public NRFunctionContactSegment2D
     {
     public:
-        FunctionContactSegment(int n, Domain *aDomain) : ContactSegment(n, aDomain) { ; }
-        ~FunctionContactSegment() {};
+        QFunctionContactSegment(int n, Domain *aDomain) : NRFunctionContactSegment2D(n, aDomain) { ; }
+        ~QFunctionContactSegment() {};
 
-        //returns normalized n, which is an normal vector of contact
-        void computeNormal(FloatArray& answer, Node * node, TimeStep* tstep) override;
+        IRResultType initializeFrom(InputRecord * ir) override;
 
-        //returns an extended N (aka A) matrix, integrated at point of contact of given node
-        void computeExtendedNMatrix(FloatMatrix& answer, Node* node, TimeStep * tStep) override;
+        const char *giveClassName() const override { return "Qfunctioncontactsegment"; }
+        const char *giveInputRecordName() const override { return _IFT_QFunctionContactSegment_Name; }
 
-        //computes the penetration of node given 
-        double computePenetration(Node * node, TimeStep * tStep) override;
-
-        void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
+    private:
+        double a, b, c;
 
     protected:
 
-        virtual void computeDistanceVector(FloatArray& answer, const FloatArray& nodeCoords) = 0;
+        inline double functionValue(const double x) const override { return ((a*x*x) + b*x + c); };
+        inline double derivativeValue(const double x) const override { return (2*a*x + b); };
+        inline double doubleDerivativeValue(const double x) const override { return 2 * a; };
     };
 
 }

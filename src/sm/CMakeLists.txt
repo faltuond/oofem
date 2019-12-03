@@ -329,6 +329,9 @@ set (sm_unsorted
     Contact/ContactSegment/elemedgecontactsegment.C
     Contact/ContactSegment/functioncontactsegment.C
     Contact/ContactSegment/qelemedgecontactsegment.C
+    Contact/ContactSegment/qfunctioncontactsegment.C
+    Contact/ContactSegment/nrfunctioncontactsegment2d.C
+    Contact/ContactSegment/circlecontactsegment.C
     )
 
   

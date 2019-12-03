@@ -5,26 +5,9 @@
 
 namespace oofem {
 
-  REGISTER_ContactSegment(FunctionContactSegment);
+  //REGISTER_ContactSegment(FunctionContactSegment);
 
-    IRResultType FunctionContactSegment::initializeFrom(InputRecord * ir)
-    {
-        IRResultType result;
-        
-        /*int funcnum;
-        IR_GIVE_FIELD(ir, funcnum, _IFT_FunctionContactSegment_function);*/
-
-        //todo store function somehow
-
-        //read circle parameters
-        IR_GIVE_FIELD(ir, centerPoint, _IFT_FunctionContactSegment_centerpoint);
-        IR_GIVE_FIELD(ir, radius, _IFT_FunctionContactSegment_radius);
-
-        //todo check number of point coords matches domain
-
-        return ContactSegment::initializeFrom(ir);
-    }
-
+   
     void FunctionContactSegment::computeNormal(FloatArray & answer, Node * node, TimeStep * tStep)
     {
         FloatArray nodeCoords;
@@ -69,13 +52,6 @@ namespace oofem {
     {
         s_loc.resize(0);
         //represents a function, does not have any dofs, so returns nothing
-    }
-
-    void FunctionContactSegment::computeDistanceVector(FloatArray & answer, const FloatArray & nodeCoords)
-    {
-        answer.beDifferenceOf(centerPoint, nodeCoords);
-        double centerDistance = answer.computeNorm();
-        answer.times((centerDistance - radius) / centerDistance);
     }
 
 }

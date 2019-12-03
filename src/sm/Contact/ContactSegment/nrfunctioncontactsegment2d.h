@@ -35,37 +35,28 @@
 
 
 #pragma once
-#include "contactsegment.h"
-#include "node.h"
-#include "inputrecord.h"
-#include "Elements/structuralelement.h"
-#include "set.h"
+#include "functioncontactsegment.h"
+#include "floatarray.h"
 
+#define NRFunctionContact_Maxiter 40
+#define NRFunctionContact_Tolerance 1.e-6
 
 namespace oofem {
-
-    //virtual class parenting all analytical function contact segments
-    //all children must implement computeDistanceVector() - and need not implement anything else
-    class FunctionContactSegment : public ContactSegment
+    //virtual class implementing Newton-Rhapson iteration for analytical function contact segments
+    //children need only implement the function, derivative and double derivative functions
+    class NRFunctionContactSegment2D : public FunctionContactSegment
     {
     public:
-        FunctionContactSegment(int n, Domain *aDomain) : ContactSegment(n, aDomain) { ; }
-        ~FunctionContactSegment() {};
-
-        //returns normalized n, which is an normal vector of contact
-        void computeNormal(FloatArray& answer, Node * node, TimeStep* tstep) override;
-
-        //returns an extended N (aka A) matrix, integrated at point of contact of given node
-        void computeExtendedNMatrix(FloatMatrix& answer, Node* node, TimeStep * tStep) override;
-
-        //computes the penetration of node given 
-        double computePenetration(Node * node, TimeStep * tStep) override;
-
-        void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
+        NRFunctionContactSegment2D(int n, Domain *aDomain) : FunctionContactSegment(n, aDomain) { ; }
+        ~NRFunctionContactSegment2D() {};
 
     protected:
 
-        virtual void computeDistanceVector(FloatArray& answer, const FloatArray& nodeCoords) = 0;
+        virtual void computeDistanceVector(FloatArray& answer, const FloatArray& nodeCoords) override;
+
+        virtual double functionValue(const double x) const = 0;
+        virtual double derivativeValue(const double x) const = 0;
+        virtual double doubleDerivativeValue(const double x) const = 0;
     };
 
 }
