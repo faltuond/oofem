@@ -38,31 +38,30 @@
 #include "classfactory.h"
 #include "nrfunctioncontactsegment2d.h"
 
-#define _IFT_QFunctionContactSegment_Name "qfunctioncontactsegment"
-#define _IFT_QFunctionContactSegment_a "a"
-#define _IFT_QFunctionContactSegment_b "b"
-#define _IFT_QFunctionContactSegment_c "c"
+#define _IFT_PolynomialContactSegment_Name "polynomialcontactsegment"
+#define _IFT_PolynomialContactSegment_coeffs "coeffs"
 
 namespace oofem {
-    class QFunctionContactSegment : public NRFunctionContactSegment2D
+    class PolynomialContactSegment : public NRFunctionContactSegment2D
     {
     public:
-        QFunctionContactSegment(int n, Domain *aDomain) : NRFunctionContactSegment2D(n, aDomain) { ; }
-        ~QFunctionContactSegment() {};
+        PolynomialContactSegment(int n, Domain *aDomain) : NRFunctionContactSegment2D(n, aDomain) { ; }
+        ~PolynomialContactSegment() {};
 
         IRResultType initializeFrom(InputRecord * ir) override;
 
-        const char *giveClassName() const override { return "Qfunctioncontactsegment"; }
-        const char *giveInputRecordName() const override { return _IFT_QFunctionContactSegment_Name; }
+        const char *giveClassName() const override { return "Polynomialcontactsegment"; }
+        const char *giveInputRecordName() const override { return _IFT_PolynomialContactSegment_Name; }
 
     private:
-        double a, b, c;
+        int order;
+        FloatArray coeffs;
 
     protected:
 
-        inline double functionValue(const double x) const override { return ((a*x*x) + b*x + c); };
-        inline double derivativeValue(const double x) const override { return (2*a*x + b); };
-        inline double doubleDerivativeValue(const double x) const override { return 2 * a; };
+        double functionValue(const double x) const override;
+        double derivativeValue(const double x) const override;
+        double doubleDerivativeValue(const double x) const override;
     };
 
 }

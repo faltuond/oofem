@@ -24,7 +24,9 @@ namespace oofem {
     {
         //returns just [[-1, 0], so that localization happens on node only
         //              [ 0,-1]]
-        answer.resize(2, 2);
+        //adapted to size of node coordinates to make the class independent on dimension
+        int ncoords = node->giveCoordinates()->giveSize();
+        answer.resize(ncoords, ncoords);
         answer.beUnitMatrix();
         answer.times(-1.); //?? seems reasonable to maintain compatibility with other segments
     }
