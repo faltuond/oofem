@@ -1,5 +1,5 @@
 
-#include "qfunctioncontactsegment.h"
+#include "polynomialcontactsegment.h"
 
 namespace oofem {
     REGISTER_ContactSegment(PolynomialContactSegment)
