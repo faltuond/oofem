@@ -1,5 +1,6 @@
 
 #include "polynomialcontactsegment.h"
+#include "mathfem.h"
 
 namespace oofem {
     REGISTER_ContactSegment(PolynomialContactSegment)

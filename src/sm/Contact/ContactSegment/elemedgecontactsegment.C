@@ -35,8 +35,9 @@ namespace oofem {
         elem->giveBoundaryEdgeNodes(edgeNodes, edgePos);
 
         node->giveUpdatedCoordinates(nodeCoords, tStep);
-        this->giveDomain()->giveNode(edgeNodes.at(1))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
-        this->giveDomain()->giveNode(edgeNodes.at(2))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
+
+	elem->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
+	elem->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
 
         bool inbetween = computeDistanceVector(normal, nodeCoords, edgeNode1Coords, edgeNode2Coords);
         //no need to care here whether distance is negative or not
@@ -73,8 +74,9 @@ namespace oofem {
         elem->giveBoundaryEdgeNodes(edgeNodes, edgePos);
 
         node->giveUpdatedCoordinates(nodeCoords, tStep);
-        this->giveDomain()->giveNode(edgeNodes.at(1))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
-        this->giveDomain()->giveNode(edgeNodes.at(2))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
+        elem->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
+	elem->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
+
 
         bool inbetween = computeDistanceVector(dummyNormal, nodeCoords, edgeNode1Coords, edgeNode2Coords, &contactPointCoords);
 
@@ -115,10 +117,11 @@ namespace oofem {
         StructuralElement* element = (StructuralElement*)this->giveDomain()->giveElement(closestEdge.at(1));
         element->giveBoundaryEdgeNodes(edgeNodes, closestEdge.at(2));
 
-        this->giveDomain()->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
-        this->giveDomain()->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
-        edgeNode1CoordsInit = this->giveDomain()->giveNode(edgeNodes(0))->giveNodeCoordinates();
-        edgeNode2CoordsInit = this->giveDomain()->giveNode(edgeNodes(1))->giveNodeCoordinates();
+        element->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
+	element->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
+	
+        edgeNode1CoordsInit = element->giveNode(edgeNodes(0))->giveNodeCoordinates();
+	edgeNode2CoordsInit = element->giveNode(edgeNodes(1))->giveNodeCoordinates();
 
         bool inbetween = computeDistanceVector(normal, nodeCoords, edgeNode1Coords, edgeNode2Coords);
         bool inbetweenInit = computeDistanceVector(normalInit, nodeCoordsInit, edgeNode1CoordsInit, edgeNode2CoordsInit);
@@ -176,8 +179,9 @@ namespace oofem {
 
             element->giveBoundaryEdgeNodes(edgeNodes, edges(edgePos));
 
-            this->giveDomain()->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
-            this->giveDomain()->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
+	    element->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
+	    element->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
+
 
             bool inbetween = computeDistanceVector(normal, nodeCoords, edgeNode1Coords, edgeNode2Coords);
 
