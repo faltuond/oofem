@@ -36,8 +36,8 @@ namespace oofem {
 
         node->giveUpdatedCoordinates(nodeCoords, tStep);
 
-	elem->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
-	elem->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
+	    elem->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
+	    elem->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
 
         bool inbetween = computeDistanceVector(normal, nodeCoords, edgeNode1Coords, edgeNode2Coords);
         //no need to care here whether distance is negative or not
@@ -75,7 +75,7 @@ namespace oofem {
 
         node->giveUpdatedCoordinates(nodeCoords, tStep);
         elem->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
-	elem->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
+	    elem->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
 
 
         bool inbetween = computeDistanceVector(dummyNormal, nodeCoords, edgeNode1Coords, edgeNode2Coords, &contactPointCoords);
@@ -118,10 +118,10 @@ namespace oofem {
         element->giveBoundaryEdgeNodes(edgeNodes, closestEdge.at(2));
 
         element->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
-	element->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
+	    element->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
 	
         edgeNode1CoordsInit = element->giveNode(edgeNodes(0))->giveNodeCoordinates();
-	edgeNode2CoordsInit = element->giveNode(edgeNodes(1))->giveNodeCoordinates();
+	    edgeNode2CoordsInit = element->giveNode(edgeNodes(1))->giveNodeCoordinates();
 
         bool inbetween = computeDistanceVector(normal, nodeCoords, edgeNode1Coords, edgeNode2Coords);
         bool inbetweenInit = computeDistanceVector(normalInit, nodeCoordsInit, edgeNode1CoordsInit, edgeNode2CoordsInit);
@@ -140,19 +140,33 @@ namespace oofem {
     void ElementEdgeContactSegment::giveLocationArray(const IntArray & dofIdArray, IntArray & answer, const UnknownNumberingScheme & c_s)
     {
         if ( lastEdge.giveSize() == 2 ) {
-            //returns the location arrays of the last contact segment worked with
             StructuralElement* element = (StructuralElement*)this->giveDomain()->giveElement(lastEdge.at(1));
             int edgePos = lastEdge.at(2);
 
             IntArray boundaryNodes;
             element->giveBoundaryEdgeNodes(boundaryNodes, edgePos);
             element->giveBoundaryLocationArray(answer, boundaryNodes, c_s, nullptr);
-        }
-        else {
+        } else {
             //if no segment was worked with, returns zeros
             answer.resize(4);
         }
 
+    }
+
+    void ElementEdgeContactSegment::giveLocationArrays(const IntArray & dofIdArray, IntArray & answer, const UnknownNumberingScheme & c_s)
+    {
+        answer.resize(0);
+        IntArray edgeloc, boundaryNodes;
+        //iterate over all edges and add their locarrays
+        for ( int pos = 0; pos < edges.giveSize() / 2; pos++ ) {
+            StructuralElement* element = (StructuralElement*)this->giveDomain()->giveElement(edges(pos * 2));
+            int edgePos = pos * 2 + 1;
+
+            element->giveBoundaryEdgeNodes(boundaryNodes, edges(edgePos));
+            element->giveBoundaryLocationArray(edgeloc, boundaryNodes, c_s, nullptr);
+
+            answer.followedBy(edgeloc);
+        }
     }
 
     void ElementEdgeContactSegment::giveClosestEdge(IntArray & answer, Node * node, TimeStep * tStep)
@@ -179,8 +193,8 @@ namespace oofem {
 
             element->giveBoundaryEdgeNodes(edgeNodes, edges(edgePos));
 
-	    element->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
-	    element->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
+	        element->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
+	        element->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
 
 
             bool inbetween = computeDistanceVector(normal, nodeCoords, edgeNode1Coords, edgeNode2Coords);

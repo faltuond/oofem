@@ -147,7 +147,7 @@ namespace oofem {
                 Node* node = this->giveDomain()->giveNode(nodeSet.at(nodePos));
                 ContactSegment* segment = (this->giveDomain()->giveContactSegment(segmentSet.at(segmentPos)));
 
-                segment->giveLocationArray(dofIdArray, r_loc, r_s);
+                segment->giveLocationArrays(dofIdArray, r_loc, r_s);
                 node->giveLocationArray(dofIdArray, c_loc, c_s);
 
                 // column block

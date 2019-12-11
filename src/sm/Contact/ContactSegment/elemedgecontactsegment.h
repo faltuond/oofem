@@ -64,7 +64,9 @@ namespace oofem {
         //computes the penetration of node given 
         double computePenetration(Node * node, TimeStep * tStep) override;
 
+        //the first one of those returns array of one segment, the second one of all segments
         void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
+        void giveLocationArrays(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
 
         void updateYourself(TimeStep * tStep) override;
 

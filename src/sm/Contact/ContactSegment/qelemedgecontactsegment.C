@@ -32,6 +32,10 @@ namespace oofem {
 
     }
 
+    void QElementEdgeContactSegment::giveLocationArrays(const IntArray & dofIdArray, IntArray & s_loc, const UnknownNumberingScheme & c_s)
+    {
+    }
+
     void QElementEdgeContactSegment::updateYourself(TimeStep * tStep)
     {
         knownNodes.clear();

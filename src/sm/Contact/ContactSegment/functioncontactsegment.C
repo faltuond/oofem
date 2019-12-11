@@ -56,4 +56,9 @@ namespace oofem {
         //represents a function, does not have any dofs, so returns nothing
     }
 
+    void FunctionContactSegment::giveLocationArrays(const IntArray & dofIdArray, IntArray & s_loc, const UnknownNumberingScheme & c_s)
+    {
+        s_loc.resize(0);
+    }
+
 }

@@ -62,6 +62,7 @@ namespace oofem {
         double computePenetration(Node * node, TimeStep * tStep) override;
 
         void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
+        void giveLocationArrays(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
 
     protected:
 

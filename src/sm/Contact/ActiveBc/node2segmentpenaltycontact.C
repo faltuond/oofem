@@ -151,7 +151,7 @@ namespace oofem {
                 ContactSegment* segment = (this->giveDomain()->giveContactSegment(segmentSet.at(segmentPos)));
 
                 node->giveLocationArray(dofIdArray, n_loc, r_s);
-                segment->giveLocationArray(dofIdArray, s_loc, c_s);
+                segment->giveLocationArrays(dofIdArray, s_loc, c_s);
 
                 // insert location arrays into the answer arrays
                 rows[pos] = n_loc;
