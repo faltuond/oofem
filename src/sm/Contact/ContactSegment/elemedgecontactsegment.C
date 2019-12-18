@@ -46,7 +46,7 @@ namespace oofem {
             answer = normal;
             //normalize
             double norm = answer.computeNorm();
-            if ( norm > 1.0e-8 ) answer.times(1. / norm);
+            //if ( norm > 1.0e-8 ) answer.times(1. / norm);
         }
         else {
             //todo maybe force reestablishing closest edge? instead of automatically giving up
