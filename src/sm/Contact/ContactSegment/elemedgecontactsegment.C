@@ -12,6 +12,15 @@ namespace oofem {
         IRResultType result;
         //IR_GIVE_FIELD(ir, this->elemSet, _IFT_ElementEdgeContactSegment_elemSet);
         IR_GIVE_FIELD(ir, setnum, _IFT_ElementEdgeContactSegment_edgeSet);
+
+        normmode = NM_Never;
+        int normmodeint = 0;
+        IR_GIVE_OPTIONAL_FIELD(ir, normmodeint, _IFT_ElementEdgeContactSegment_normMode);
+        if ( result == IRRT_OK ) {
+            normmode = (NormalizationMode)normmodeint;
+            if ( normmodeint < 0 || normmodeint > 2 ) OOFEM_ERROR("Contact segment normalization mode can be only 0, 1 or 2");
+        }
+
         return ContactSegment::initializeFrom(ir);
     }
 
@@ -44,9 +53,11 @@ namespace oofem {
 
         if ( inbetween ) {
             answer = normal;
-            //normalize
-            double norm = answer.computeNorm();
-            //if ( norm > 1.0e-8 ) answer.times(1. / norm);
+            //normalize according to normalization mode specified
+            if ( normmode != NM_Never ) {
+                double norm = answer.computeNorm();
+                if (normmode == NM_Always || norm > 1.0e-8  ) answer.times(1. / norm);
+            }
         }
         else {
             //todo maybe force reestablishing closest edge? instead of automatically giving up
@@ -259,7 +270,7 @@ namespace oofem {
 
         double lineLength = abs(linePoint1(0) - linePoint2(0));
         //point lies inbetween line points if it is closer to both than length of line
-        return abs(contactPoint(0) - linePoint1(0)) < lineLength && abs(contactPoint(0) - linePoint2(0)) < lineLength;
+        return abs(contactPoint(0) - linePoint1(0)) <= lineLength && abs(contactPoint(0) - linePoint2(0)) <= lineLength;
     }
 
     void ElementEdgeContactSegment::updateYourself(TimeStep *tStep)

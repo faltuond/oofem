@@ -44,6 +44,7 @@
 
 #define _IFT_ElementEdgeContactSegment_Name "elementedgecontactsegment"
 #define _IFT_ElementEdgeContactSegment_edgeSet "edgeset"
+#define _IFT_ElementEdgeContactSegment_normMode "normmode"
  //#define _IFT_ElementEdgeContactSegment_elemSet "elemset"
 
 namespace oofem {
@@ -80,6 +81,9 @@ namespace oofem {
         std::vector<Node*> knownNodes;
         std::vector<IntArray> knownClosestEdges;
         int setnum;
+
+        typedef enum NormalizationMode { NM_Never = 0, NM_IfNotSmall = 1, NM_Always = 2};
+        NormalizationMode normmode;
 
         //gives the closest edge to a given node in the form of an IntArray(elempos,edgepos)
         //only computes it again if it wasn't determined for this node in this solution step yet

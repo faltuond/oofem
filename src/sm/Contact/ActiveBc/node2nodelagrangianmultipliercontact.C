@@ -80,9 +80,10 @@ Node2NodeLagrangianMultiplierContact :: assemble(SparseMtrx &answer, TimeStep *t
     FloatMatrix K;
     IntArray loc, c_loc;
 
-    IntArray dofIdArray = {
-        D_u, D_v
-    };
+    IntArray dofIdArray = this->giveDomain()->giveDefaultNodeDofIDArry();
+    /*IntArray dofIdArray = {
+        D_u, D_w
+    };*/
 
     if ( masterSet.giveSize() != slaveSet.giveSize() ) {
         OOFEM_ERROR("Number of master nodes does not match number of slave nodes")
@@ -124,9 +125,10 @@ Node2NodeLagrangianMultiplierContact :: assembleVector(FloatArray &answer, TimeS
 
 
     //IntArray dofIdArray = {D_u, D_v, D_w};
-    IntArray dofIdArray = {
-        D_u, D_v
-    };
+    IntArray dofIdArray = this->giveDomain()->giveDefaultNodeDofIDArry();
+    /*IntArray dofIdArray = {
+        D_u, D_w
+    };*/
 
 
     if ( type == InternalForcesVector ) {
@@ -244,9 +246,10 @@ Node2NodeLagrangianMultiplierContact :: giveLagrangianMultiplierLocationArray(co
 {
     int size = this->masterSet.giveSize();
     answer.resize(size);
-    IntArray dofIdArray = {
-        D_u, D_v
-    };
+    IntArray dofIdArray = this->giveDomain()->giveDefaultNodeDofIDArry();
+    /*IntArray dofIdArray = {
+        D_u, D_w
+    };*/
 
     // assemble location array
     IntArray l(1);
@@ -263,9 +266,11 @@ Node2NodeLagrangianMultiplierContact :: giveLocationArrays(std :: vector< IntArr
     IntArray r_loc, c_loc;
     rows.resize(3 * masterSet.giveSize() );
     cols.resize(3 * masterSet.giveSize() );
-    IntArray dofIdArray = {
-        D_u, D_v
-    };
+    IntArray dofIdArray = this->giveDomain()->giveDefaultNodeDofIDArry();
+    /*IntArray dofIdArray = {
+        D_u, D_w
+    };*/
+    
     std :: vector< IntArray >lambdaeq;
     this->giveLagrangianMultiplierLocationArray(r_s, lambdaeq);
 

@@ -137,11 +137,13 @@ namespace oofem {
         IntArray n_loc, s_loc;
 
         int ncombinations = nodeSet.giveSize() * segmentSet.giveSize();
-        rows.resize(ncombinations);
-        cols.resize(ncombinations);
-        IntArray dofIdArray = {
+        rows.resize(ncombinations*2);
+        cols.resize(ncombinations*2);
+
+        IntArray dofIdArray = giveDomain()->giveDefaultNodeDofIDArry();
+        /*IntArray dofIdArray = {
           D_u, D_v
-        };
+        };*/
 
         int pos = 0;
 
@@ -156,7 +158,9 @@ namespace oofem {
                 // insert location arrays into the answer arrays
                 rows[pos] = n_loc;
                 cols[pos] = s_loc;
-                pos++;
+                rows[pos+1] = s_loc;
+                cols[pos+1] = n_loc;
+                pos += 2;
             }
         }
     }

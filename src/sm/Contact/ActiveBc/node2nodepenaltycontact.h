@@ -37,6 +37,7 @@
 
 
 #include "activebc.h"
+#include "floatarray.h"
 
 
  ///@name Input fields for _IFT_ContactElement
@@ -48,7 +49,7 @@
 #define _IFT_Node2NodePenaltyContact_masterSet "masterset"
 #define _IFT_Node2NodePenaltyContact_slaveSet "slaveset"
 
-
+#define _IFT_Node2NodePenaltyContact_prescribedNormal "normal"
 
 
 //@}
@@ -64,6 +65,7 @@ namespace oofem {
     class IntegrationRule;
     class ContactElement;
     class Node;
+    class FloatArray;
 
     class OOFEM_EXPORT Node2NodePenaltyContact : public ActiveBoundaryCondition
     {
@@ -72,6 +74,7 @@ namespace oofem {
         double penalty;
         IntArray slaveSet;
         IntArray masterSet;
+        FloatArray prescribedNormal;
     public:
 
         /// Constructor.

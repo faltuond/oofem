@@ -57,6 +57,7 @@ namespace oofem {
         IR_GIVE_FIELD(ir, this->masterSet, _IFT_Node2NodePenaltyContact_masterSet);
         IR_GIVE_FIELD(ir, this->slaveSet, _IFT_Node2NodePenaltyContact_slaveSet);
 
+        IR_GIVE_OPTIONAL_FIELD(ir, this->prescribedNormal, _IFT_Node2NodePenaltyContact_prescribedNormal);
 
         return ActiveBoundaryCondition::initializeFrom(ir);
     }
@@ -135,12 +136,13 @@ namespace oofem {
     void Node2NodePenaltyContact::giveLocationArrays(std::vector< IntArray > &rows, std::vector< IntArray > &cols, CharType type, const UnknownNumberingScheme &r_s, const UnknownNumberingScheme &c_s)
     {
         IntArray r_loc, c_loc;
-        rows.resize(masterSet.giveSize());
-        cols.resize(masterSet.giveSize());
+        rows.resize(masterSet.giveSize()*2);
+        cols.resize(masterSet.giveSize()*2);
         IntArray dofIdArray = {
             D_u, D_v
         };
 
+        int arraypos = 0;
         for ( int pos = 1; pos <= masterSet.giveSize(); ++pos ) {
             Node *masterNode = this->giveDomain()->giveNode(masterSet.at(pos));
             Node *slaveNode = this->giveDomain()->giveNode(slaveSet.at(pos));
@@ -149,8 +151,13 @@ namespace oofem {
             slaveNode->giveLocationArray(dofIdArray, c_loc, c_s);
 
             // column block
-            rows[pos - 1] = r_loc;
-            cols[pos - 1] = c_loc;
+            rows[arraypos] = r_loc;
+            cols[arraypos] = c_loc;
+            rows[arraypos + 1] = c_loc;
+            cols[arraypos + 1] = r_loc;
+
+            //arraypos++;
+            arraypos += 2;
         }
     }
 
@@ -177,10 +184,17 @@ namespace oofem {
 
     void Node2NodePenaltyContact::computeGap(double &answer, Node *masterNode, Node *slaveNode, TimeStep *tStep)
     {
+        int dimension = masterNode->giveNumberOfDofs();
         FloatArray xs, xm, uS, uM;
         xs = *slaveNode->giveCoordinates();
         xm = *masterNode->giveCoordinates();
-        FloatArray normal = xs - xm;
+        FloatArray normal;
+        if ( prescribedNormal.giveSize() == masterNode->giveNumberOfDofs() ) {
+            normal = prescribedNormal;
+        }
+        else {
+            normal = xs - xm;
+        }
         double norm = normal.computeNorm();
         if ( norm < 1.0e-8 ) {
             OOFEM_ERROR("Couldn't compute normal between master node (num %d) and slave node (num %d), nodes are too close to each other.",
@@ -201,10 +215,18 @@ namespace oofem {
 
     void Node2NodePenaltyContact::computeNormalMatrixAt(FloatArray &answer, Node *masterNode, Node *slaveNode, TimeStep *TimeStep)
     {
-        FloatArray xs, xm;
-        xs = *slaveNode->giveCoordinates();
-        xm = *masterNode->giveCoordinates();
-        FloatArray normal = xs - xm;
+        int dimension = masterNode->giveNumberOfDofs();
+        
+        FloatArray normal;
+        if ( prescribedNormal.giveSize() == masterNode->giveNumberOfDofs() ) {
+            normal = prescribedNormal;
+        }
+        else {
+            FloatArray xs, xm;
+            xs = *slaveNode->giveCoordinates();
+            xm = *masterNode->giveCoordinates();
+            normal = xs - xm;
+        }
         double norm = normal.computeNorm();
         if ( norm < 1.0e-8 ) {
             OOFEM_ERROR("Couldn't compute normal between master node (num %d) and slave node (num %d), nodes are too close to each other.",
