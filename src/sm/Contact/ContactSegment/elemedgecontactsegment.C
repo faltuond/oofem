@@ -13,13 +13,13 @@ namespace oofem {
         //IR_GIVE_FIELD(ir, this->elemSet, _IFT_ElementEdgeContactSegment_elemSet);
         IR_GIVE_FIELD(ir, setnum, _IFT_ElementEdgeContactSegment_edgeSet);
 
-        normmode = NM_Never;
+        /*normmode = NM_Never;
         int normmodeint = 0;
         IR_GIVE_OPTIONAL_FIELD(ir, normmodeint, _IFT_ElementEdgeContactSegment_normMode);
         if ( result == IRRT_OK ) {
             normmode = (NormalizationMode)normmodeint;
             if ( normmodeint < 0 || normmodeint > 2 ) OOFEM_ERROR("Contact segment normalization mode can be only 0, 1 or 2");
-        }
+        }*/
 
         return ContactSegment::initializeFrom(ir);
     }

@@ -37,6 +37,9 @@
 #pragma once
 #include "femcmpnn.h"
 #include "node.h"
+#include "inputrecord.h"
+
+#define _IFT_ContactSegment_normMode "normmode"
 
 namespace oofem {
     class ContactSegment : public FEMComponent
@@ -45,11 +48,19 @@ namespace oofem {
       ContactSegment(int n, Domain *aDomain) : FEMComponent(n, aDomain){;}
       ~ContactSegment() {};
 
-      ////returns normalized n, which is an normal vector of contact
-      //virtual void computeNormal(FloatArray& answer, const Node * node) = 0;
-      ////computes the penetration
-      //virtual double computePenetration(const Node * node) = 0;
-      //virtual void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) = 0;
+      virtual IRResultType initializeFrom(InputRecord* ir) override {
+          IRResultType result;
+
+          normmode = NM_Never;
+          int normmodeint = 0;
+          IR_GIVE_OPTIONAL_FIELD(ir, normmodeint, _IFT_ContactSegment_normMode);
+          if ( result == IRRT_OK ) {
+              normmode = (NormalizationMode)normmodeint;
+              if ( normmodeint < 0 || normmodeint > 2 ) OOFEM_ERROR("Contact segment normalization mode can be only 0, 1 or 2");
+          }
+
+          return FEMComponent::initializeFrom(ir);
+      };
 
       //returns normalized n, which is an normal vector of contact
       virtual void computeNormal(FloatArray& answer, Node * node, TimeStep* tstep) = 0;
@@ -67,6 +78,11 @@ namespace oofem {
       virtual void updateYourself(TimeStep * tStep) { ; };
 
       virtual void postInitialize(){;}
+
+    protected:
+
+        typedef enum NormalizationMode { NM_Never = 0, NM_IfNotSmall = 1, NM_Always = 2 };
+        NormalizationMode normmode;
     };
 }
 

@@ -15,9 +15,11 @@ namespace oofem {
 
         computeDistanceVector(answer, nodeCoords);
 
-        //normalize
-        double norm = answer.computeNorm();
-        if ( norm > 1.0e-8 ) answer.times(1. / norm);
+        //normalize according to normalization mode specified
+        if ( normmode != NM_Never ) {
+            double norm = answer.computeNorm();
+            if ( normmode == NM_Always || norm > 1.0e-8 ) answer.times(1. / norm);
+        }
     }
 
     void FunctionContactSegment::computeExtendedNMatrix(FloatMatrix & answer, Node * node, TimeStep * tStep)
