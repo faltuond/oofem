@@ -44,6 +44,7 @@
 
 #define _IFT_ElementEdgeContactSegment_Name "elementedgecontactsegment"
 #define _IFT_ElementEdgeContactSegment_edgeSet "edgeset"
+#define _IFT_ElementEdgeContactSegment_pairUpdateMode "pairupdatemode"
  //#define _IFT_ElementEdgeContactSegment_elemSet "elemset"
 
 namespace oofem {
@@ -81,6 +82,12 @@ namespace oofem {
         std::vector<IntArray> knownClosestEdges;
         int setnum;
 
+        typedef enum UpdateMode{UM_Never = 0, UM_EachStep = 1, UM_EveryQuery = 2};
+        UpdateMode updateMode;
+
+
+
+
         //gives the closest edge to a given node in the form of an IntArray(elempos,edgepos)
         //only computes it again if it wasn't determined for this node in this solution step yet
         //(i.e. the array of known closest edges is reset after step convergence)
@@ -93,7 +100,7 @@ namespace oofem {
         //searches the array of nodes to which a closest edge was already computed
         //returns -1 if unsuccessful
         inline int giveIndexOfKnownNode(const Node * node) {
-            for ( int i = 0; i < knownNodes.size(); i++ ) {
+            for ( int i = knownNodes.size() - 1; i >= 0; i-- ) {
                 if ( node == knownNodes.at(i) ) return i;
             }
             return -1;

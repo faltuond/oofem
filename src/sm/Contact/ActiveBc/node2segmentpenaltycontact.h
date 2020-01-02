@@ -48,7 +48,7 @@
 #define _IFT_Node2SegmentPenaltyContact_segmentSet "segmentset"
 #define _IFT_Node2SegmentPenaltyContact_nodeSet "nodeset"
 
-
+#define _IFT_Node2SegmentPenaltyContact_prescribedNormal "normal"
 
 //@}
 
@@ -71,6 +71,7 @@ private:
   double penalty;
   IntArray nodeSet;
   IntArray segmentSet;
+  FloatArray prescribedNormal;
 public:
 
     /// Constructor.

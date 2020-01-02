@@ -13,13 +13,13 @@ namespace oofem {
         //IR_GIVE_FIELD(ir, this->elemSet, _IFT_ElementEdgeContactSegment_elemSet);
         IR_GIVE_FIELD(ir, setnum, _IFT_ElementEdgeContactSegment_edgeSet);
 
-        /*normmode = NM_Never;
-        int normmodeint = 0;
-        IR_GIVE_OPTIONAL_FIELD(ir, normmodeint, _IFT_ElementEdgeContactSegment_normMode);
+        updateMode = UM_EachStep;
+        int updateModeInt = 0;
+        IR_GIVE_OPTIONAL_FIELD(ir, updateModeInt, _IFT_ElementEdgeContactSegment_pairUpdateMode);
         if ( result == IRRT_OK ) {
-            normmode = (NormalizationMode)normmodeint;
-            if ( normmodeint < 0 || normmodeint > 2 ) OOFEM_ERROR("Contact segment normalization mode can be only 0, 1 or 2");
-        }*/
+            updateMode = (UpdateMode)updateModeInt;
+            if ( updateModeInt < 0 || updateModeInt > 2 ) OOFEM_ERROR("Contact segment pairing update mode can be only 0, 1 or 2");
+        }
 
         return ContactSegment::initializeFrom(ir);
     }
@@ -51,12 +51,12 @@ namespace oofem {
         bool inbetween = computeDistanceVector(normal, nodeCoords, edgeNode1Coords, edgeNode2Coords);
         //no need to care here whether distance is negative or not
 
-        if ( inbetween ) {
+        if ( true || inbetween ) { //attempt to fix concave problem
             answer = normal;
             //normalize according to normalization mode specified
             if ( normmode != NM_Never ) {
                 double norm = answer.computeNorm();
-                if (normmode == NM_Always || norm > 1.0e-8  ) answer.times(1. / norm);
+                if ( (normmode == NM_Always || norm > 1.0e-8) && norm != 0 ) answer.times(1. / norm);
             }
         }
         else {
@@ -183,7 +183,7 @@ namespace oofem {
     void ElementEdgeContactSegment::giveClosestEdge(IntArray & answer, Node * node, TimeStep * tStep)
     {
         int knownIndex = giveIndexOfKnownNode(node);
-        if ( knownIndex != -1 && knownClosestEdges.at(knownIndex).giveSize() == 2 ) {
+        if (updateMode != UM_EveryQuery && knownIndex != -1 && knownClosestEdges.at(knownIndex).giveSize() == 2 ) {
             answer = knownClosestEdges.at(knownIndex);
             lastEdge = answer;
             return;
@@ -276,8 +276,10 @@ namespace oofem {
     void ElementEdgeContactSegment::updateYourself(TimeStep *tStep)
         // Updates the receiver at end of step.
     {
-        knownNodes.clear();
-        knownClosestEdges.clear();
+        if ( updateMode != UM_Never ) {
+            knownNodes.clear();
+            knownClosestEdges.clear();
+        }
         lastEdge.resize(0);
     }
 

@@ -57,6 +57,8 @@ namespace oofem {
         IR_GIVE_FIELD(ir, this->segmentSet, _IFT_Node2SegmentPenaltyContact_segmentSet);
         IR_GIVE_FIELD(ir, this->nodeSet, _IFT_Node2SegmentPenaltyContact_nodeSet);
 
+        IR_GIVE_OPTIONAL_FIELD(ir, this->prescribedNormal, _IFT_Node2SegmentPenaltyContact_prescribedNormal);
+
         return ActiveBoundaryCondition::initializeFrom(ir);
     }
 
@@ -90,6 +92,7 @@ namespace oofem {
                 loc.followedBy(node_loc);
 
                 answer.assemble(loc, K);
+                //K.printYourself();
             }
         }
 
@@ -181,10 +184,17 @@ namespace oofem {
 
         FloatArray normal;
         FloatMatrix extendedN, extendedNTranspose;
-        segment->computeNormal(normal, node, tStep);
 
-        //test
-        //normal.times(-1.);
+        if ( prescribedNormal.giveSize() == node->giveNumberOfDofs() ) {
+            normal = prescribedNormal;
+           /* double gap;
+            computeGap(gap, node, segment, tStep);
+            if ( gap < 0 ) normal.times(-1.);*/
+        }
+        else {
+            segment->computeNormal(normal, node, tStep);
+        }
+
 
         segment->computeExtendedNMatrix(extendedN, node, tStep);
         extendedNTranspose.beTranspositionOf(extendedN);
@@ -207,7 +217,7 @@ namespace oofem {
         this->computeNormalMatrixAt(Nv, node, segment, tStep);
         answer.beDyadicProductOf(Nv, Nv);
         answer.times(this->penalty);
-        if ( gap > 0.0 ) answer.zero();
+        if ( gap >= 0.0 ) answer.zero();
     }
 
 
