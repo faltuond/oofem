@@ -54,6 +54,8 @@
 #define _IFT_Node2SegmentLagrangianMultiplierContact_nodeSet "nodeset"
 #define _IFT_Node2SegmentLagrangianMultiplierContact_segmentSet "segmentset"
 
+#define _IFT_Node2SegmentLagrangianMultiplierContact_prescribedNormal "normal"
+
 
 
 
@@ -79,6 +81,7 @@ namespace oofem {
         IntArray segmentSet;
         std::vector<  DofManager * >lmdm;
         int lm_num; ///< Determines the number of Lagrange multiplier DOFs (because all nodes are checked against all segments)
+	FloatArray prescribedNormal;
     public:
 
         /// Constructor.

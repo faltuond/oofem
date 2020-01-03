@@ -21,6 +21,9 @@ namespace oofem {
             lmdm.at(pos)->appendDof(new MasterDof(this->lmdm.at(pos), (DofIDItem)(this->giveDomain()->giveNextFreeDofID())));
         }
 
+	IR_GIVE_OPTIONAL_FIELD(ir, this->prescribedNormal, _IFT_Node2SegmentLagrangianMultiplierContact_prescribedNormal);
+
+
         return ActiveBoundaryCondition::initializeFrom(ir);
     }
 
@@ -79,9 +82,13 @@ namespace oofem {
         if ( type == InternalForcesVector ) {
             // assemble lagrangian multiplier contribution to residuum
             // assemble location array
-            IntArray loc, n_loc;
-            FloatArray n;
+	    std::vector< IntArray >lambdaeq;
+            IntArray loc, n_loc;   
+            FloatArray n, fext;
             int lmpos = 1;
+
+	    this->giveLagrangianMultiplierLocationArray(s, lambdaeq);
+
             for ( int nodePos = 1; nodePos <= nodeSet.giveSize(); ++nodePos ) {
                 for ( int segmentPos = 1; segmentPos <= segmentSet.giveSize(); segmentPos++ ) {
                     
@@ -93,37 +100,16 @@ namespace oofem {
 
                     n.times(mdof->giveUnknown(mode, tStep));
 
+		    this->computeExternalForcesFromContact(fext, node, segment, tStep);
+
                     segment->giveLocationArray(dofIdArray, loc, s);
                     node->giveLocationArray(dofIdArray, n_loc, s);
                     loc.followedBy(n_loc);
 
-                    //TEST
-                    /*double gap;
-                    this->computeGap(gap, node, segment, tStep);
-                    if ( gap >= 0. ) n.times(0.);*/
-                    //TEST
-
-                    answer.assemble(n, loc);
+		    answer.assemble(n, loc);
+		    answer.assemble(fext, lambdaeq.at(lmpos - 1));
 
                     lmpos++;
-                }
-            }
-        }
-        else if ( type == ExternalForcesVector ) {
-            IntArray loc, c_loc;
-            FloatArray fext;
-
-            std::vector< IntArray >lambdaeq;
-            this->giveLagrangianMultiplierLocationArray(s, lambdaeq);
-            int lmpos = 1;
-
-            for ( int nodePos = 1; nodePos <= nodeSet.giveSize(); ++nodePos ) {
-                for ( int segmentPos = 1; segmentPos <= segmentSet.giveSize(); segmentPos++ ) {
-                    Node* node = this->giveDomain()->giveNode(nodeSet.at(nodePos));
-                    ContactSegment* segment = (this->giveDomain()->giveContactSegment(segmentSet.at(segmentPos)));
-
-                    this->computeExternalForcesFromContact(fext, node, segment, tStep);
-                    answer.assemble(fext, lambdaeq.at(lmpos - 1));
                 }
             }
         }
@@ -203,22 +189,30 @@ namespace oofem {
 
         FloatArray normal;
         FloatMatrix extendedN, extendedNTranspose;
-        segment->computeNormal(normal, node, tStep);
 
+	if ( prescribedNormal.giveSize() == node->giveNumberOfDofs() ) {
+	  normal = prescribedNormal;
+        } else {
+	  segment->computeNormal(normal, node, tStep);
+	  double norm = normal.computeNorm();
+	  if(norm != 0) {
+	    normal.times(1. / norm);
+	  }
+        }
+	
         segment->computeExtendedNMatrix(extendedN, node, tStep);
-        extendedNTranspose.beTranspositionOf(extendedN);
-
         //normal should be given just as N^t * n;
-        answer.beProductOf(extendedNTranspose, normal);
+        answer.beTProductOf(extendedN, normal);
     }
 
     void Node2SegmentLagrangianMultiplierContact::computeExternalForcesFromContact(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * tStep)
     {
         answer.resize(1);
         this->computeGap(answer.at(1), node, segment, tStep);
-        if ( answer.at(1) > 0.0 ) {
+        if ( answer.at(1) >= 0.0 ) {
             answer.at(1) = 0.0;
         }
+	answer.times(-1.);
     }
 
 }//end namespace oofem
