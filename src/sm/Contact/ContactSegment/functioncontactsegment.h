@@ -45,7 +45,7 @@
 namespace oofem {
 
     //virtual class parenting all analytical function contact segments
-    //all children must implement computeDistanceVector() - and need not implement anything else
+    //all children must implement computeContactPoint() - and need not implement anything else
     class FunctionContactSegment : public ContactSegment
     {
     public:
@@ -66,7 +66,7 @@ namespace oofem {
 
     protected:
 
-        virtual void computeDistanceVector(FloatArray& answer, const FloatArray& nodeCoords) = 0;
+        virtual void computeContactPoint(FloatArray& answer, FloatArray& normal, const FloatArray& nodeCoords) = 0;
     };
 
 }

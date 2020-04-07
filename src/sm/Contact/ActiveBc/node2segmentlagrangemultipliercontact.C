@@ -21,7 +21,7 @@ namespace oofem {
             lmdm.at(pos)->appendDof(new MasterDof(this->lmdm.at(pos), (DofIDItem)(this->giveDomain()->giveNextFreeDofID())));
         }
 
-	IR_GIVE_OPTIONAL_FIELD(ir, this->prescribedNormal, _IFT_Node2SegmentLagrangianMultiplierContact_prescribedNormal);
+        IR_GIVE_OPTIONAL_FIELD(ir, this->prescribedNormal, _IFT_Node2SegmentLagrangianMultiplierContact_prescribedNormal);
 
 
         return ActiveBoundaryCondition::initializeFrom(ir);
@@ -36,9 +36,10 @@ namespace oofem {
         FloatMatrix K;
         IntArray loc, n_loc;
 
-        IntArray dofIdArray = {
+        IntArray dofIdArray = giveDomain()->giveDefaultNodeDofIDArry();
+        /*IntArray dofIdArray = {
             D_u, D_v
-        };
+        };*/
 
         std::vector< IntArray >lambdaeq;
         this->giveLagrangianMultiplierLocationArray(r_s, lambdaeq);
@@ -75,23 +76,24 @@ namespace oofem {
 
     void Node2SegmentLagrangianMultiplierContact::assembleVector(FloatArray & answer, TimeStep * tStep, CharType type, ValueModeType mode, const UnknownNumberingScheme & s, FloatArray * eNorms)
     {
-        IntArray dofIdArray = {
-          D_u, D_v
-        };
+        IntArray dofIdArray = giveDomain()->giveDefaultNodeDofIDArry();
+        /*IntArray dofIdArray = {
+            D_u, D_v
+        };*/
 
         if ( type == InternalForcesVector ) {
             // assemble lagrangian multiplier contribution to residuum
             // assemble location array
-	    std::vector< IntArray >lambdaeq;
-            IntArray loc, n_loc;   
+            std::vector< IntArray >lambdaeq;
+            IntArray loc, n_loc;
             FloatArray n, fext;
             int lmpos = 1;
 
-	    this->giveLagrangianMultiplierLocationArray(s, lambdaeq);
+            this->giveLagrangianMultiplierLocationArray(s, lambdaeq);
 
             for ( int nodePos = 1; nodePos <= nodeSet.giveSize(); ++nodePos ) {
                 for ( int segmentPos = 1; segmentPos <= segmentSet.giveSize(); segmentPos++ ) {
-                    
+
                     Node* node = this->giveDomain()->giveNode(nodeSet.at(nodePos));
                     ContactSegment* segment = (this->giveDomain()->giveContactSegment(segmentSet.at(segmentPos)));
 
@@ -100,14 +102,14 @@ namespace oofem {
 
                     n.times(mdof->giveUnknown(mode, tStep));
 
-		    this->computeExternalForcesFromContact(fext, node, segment, tStep);
+                    this->computeExternalForcesFromContact(fext, node, segment, tStep);
 
                     segment->giveLocationArray(dofIdArray, loc, s);
                     node->giveLocationArray(dofIdArray, n_loc, s);
                     loc.followedBy(n_loc);
 
-		    answer.assemble(n, loc);
-		    answer.assemble(fext, lambdaeq.at(lmpos - 1));
+                    answer.assemble(n, loc);
+                    answer.assemble(fext, lambdaeq.at(lmpos - 1));
 
                     lmpos++;
                 }
@@ -120,13 +122,14 @@ namespace oofem {
         IntArray r_loc, c_loc;
         rows.resize(3 * lm_num);
         cols.resize(3 * lm_num);
-        IntArray dofIdArray = {
+        IntArray dofIdArray = giveDomain()->giveDefaultNodeDofIDArry();
+        /*IntArray dofIdArray = {
             D_u, D_v
-        };
+        };*/
 
         std::vector< IntArray >lambdaeq;
         this->giveLagrangianMultiplierLocationArray(r_s, lambdaeq);
-        
+
         int lmpos = 1;
         for ( int nodePos = 1; nodePos <= nodeSet.giveSize(); ++nodePos ) {
             for ( int segmentPos = 1; segmentPos <= segmentSet.giveSize(); segmentPos++ ) {
@@ -154,9 +157,10 @@ namespace oofem {
     void Node2SegmentLagrangianMultiplierContact::giveLagrangianMultiplierLocationArray(const UnknownNumberingScheme & r_s, std::vector<IntArray>& answer)
     {
         answer.resize(lm_num);
-        IntArray dofIdArray = {
+        IntArray dofIdArray = giveDomain()->giveDefaultNodeDofIDArry();
+        /*IntArray dofIdArray = {
             D_u, D_v
-        };
+        };*/
 
         // assemble location array
         IntArray l(1);
@@ -190,16 +194,17 @@ namespace oofem {
         FloatArray normal;
         FloatMatrix extendedN, extendedNTranspose;
 
-	if ( prescribedNormal.giveSize() == node->giveNumberOfDofs() ) {
-	  normal = prescribedNormal;
-        } else {
-	  segment->computeNormal(normal, node, tStep);
-	  double norm = normal.computeNorm();
-	  if(norm != 0) {
-	    normal.times(1. / norm);
-	  }
+        if ( prescribedNormal.giveSize() == node->giveNumberOfDofs() ) {
+            normal = prescribedNormal;
         }
-	
+        else {
+            segment->computeNormal(normal, node, tStep);
+            double norm = normal.computeNorm();
+            if ( norm != 0 ) {
+                normal.times(1. / norm);
+            }
+        }
+
         segment->computeExtendedNMatrix(extendedN, node, tStep);
         //normal should be given just as N^t * n;
         answer.beTProductOf(extendedN, normal);
@@ -212,7 +217,7 @@ namespace oofem {
         if ( answer.at(1) >= 0.0 ) {
             answer.at(1) = 0.0;
         }
-	answer.times(-1.);
+        answer.times(-1.);
     }
 
 }//end namespace oofem

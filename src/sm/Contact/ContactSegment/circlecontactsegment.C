@@ -12,13 +12,29 @@ namespace oofem {
         return FunctionContactSegment::initializeFrom(ir);
     }
 
-    void CircleContactSegment::computeDistanceVector(FloatArray & answer, const FloatArray & nodeCoords)
+    void CircleContactSegment::computeContactPoint(FloatArray & answer, FloatArray& normal, const FloatArray & nodeCoords)
     {
         if ( nodeCoords.giveSize() != centerPoint.giveSize() ) {
             OOFEM_ERROR("Node coordinate dimension (%i) does not match circle/sphere center point dimension (%i)", nodeCoords.giveSize(), centerPoint.giveSize());
         }
-        answer.beDifferenceOf(centerPoint, nodeCoords);
+        /*normal.beDifferenceOf(centerPoint, nodeCoords);
         double centerDistance = answer.computeNorm();
-        answer.times((centerDistance - radius) / centerDistance);
+        normal.times((centerDistance - radius) / centerDistance);*/
+
+
+        //foolproof (hopefully) approach
+        //first compute projection from node to center of circle
+        FloatArray projection;
+        projection.beDifferenceOf(centerPoint, nodeCoords);
+
+        //normalized projection is the normal vector
+        normal = projection;
+        normal.normalize();
+
+        //now compute contact point by adding to node coords the distance to circle
+        double centerDistance = answer.computeNorm();
+        projection.times((centerDistance - radius) / centerDistance);
+        answer = nodeCoords;
+        answer.add(projection);
     }
 }//end namespace oofem

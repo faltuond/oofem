@@ -13,13 +13,14 @@ namespace oofem {
         FloatArray nodeCoords;
         node->giveUpdatedCoordinates(nodeCoords, tStep);
 
-        computeDistanceVector(answer, nodeCoords);
+        FloatArray dummyContactPoint;
+        computeContactPoint(dummyContactPoint, answer, nodeCoords); //should already be normalized
 
         //normalize according to normalization mode specified
-        if ( normmode != NM_Never ) {
+        /*if ( normmode != NM_Never ) {
             double norm = answer.computeNorm();
             if ( normmode == NM_Always || norm > 1.0e-8 ) answer.times(1. / norm);
-        }
+        }*/
     }
 
     void FunctionContactSegment::computeExtendedNMatrix(FloatMatrix & answer, Node * node, TimeStep * tStep)
@@ -36,17 +37,21 @@ namespace oofem {
     double FunctionContactSegment::computePenetration(Node * node, TimeStep * tStep)
     {
         //get current nodal coords
-        FloatArray nodeCoords, nodeCoordsInit, normal, normalInit;
+        FloatArray nodeCoords, nodeCoordsInit, contactPoint, contactPointInit, dummyNormal;
         node->giveUpdatedCoordinates(nodeCoords, tStep);
         nodeCoordsInit = node->giveNodeCoordinates();
 
-        computeDistanceVector(normal, nodeCoords);
-        computeDistanceVector(normalInit, nodeCoordsInit);
+        computeContactPoint(contactPoint, dummyNormal, nodeCoords);
+        computeContactPoint(contactPointInit, dummyNormal, nodeCoordsInit);
 
-        double cos = normal.dotProduct(normalInit);
+        FloatArray projection, projectionInit;
+        projection.beDifferenceOf(contactPoint, nodeCoords);
+        projectionInit.beDifferenceOf(contactPointInit, nodeCoordsInit);
+
+        double cos = projection.dotProduct(projectionInit);
         bool penetrated = cos <= 0;
 
-        double answer = normal.computeNorm();
+        double answer = projection.computeNorm();
         if ( penetrated ) answer *= -1;
 
         return answer;

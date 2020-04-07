@@ -52,7 +52,7 @@ namespace oofem {
 
     protected:
 
-        virtual void computeDistanceVector(FloatArray& answer, const FloatArray& nodeCoords) override;
+        virtual void computeContactPoint(FloatArray& answer, FloatArray& normal, const FloatArray& nodeCoords) override;
 
         virtual double functionValue(const double x) const = 0;
         virtual double derivativeValue(const double x) const = 0;

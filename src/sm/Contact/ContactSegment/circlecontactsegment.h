@@ -66,7 +66,7 @@ namespace oofem {
 
     protected:
 
-        void computeDistanceVector(FloatArray& answer, const FloatArray& nodeCoords) override;
+        void computeContactPoint(FloatArray& answer, FloatArray& normal, const FloatArray& nodeCoords) override;
 
     };
 

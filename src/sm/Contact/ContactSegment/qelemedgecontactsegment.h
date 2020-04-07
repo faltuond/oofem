@@ -87,7 +87,7 @@ namespace oofem {
 
         //computes distance of a point given by a set of coordinates to a line given by two sets of coordinates
         //returns whether point of intersection is inbetween the line points
-        //bool computeDistanceVector(FloatArray& answer, const FloatArray& externalPoint, const FloatArray& linePoint1, const FloatArray& linePoint2, FloatArray * contactPointCoords = nullptr);
+        //bool computeContactPoint(FloatArray& answer, const FloatArray& externalPoint, const FloatArray& linePoint1, const FloatArray& linePoint2, FloatArray * contactPointCoords = nullptr);
 
         //searches the array of nodes to which a closest edge was already computed
         //returns -1 if unsuccessful

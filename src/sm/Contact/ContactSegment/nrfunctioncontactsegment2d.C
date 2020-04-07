@@ -2,7 +2,7 @@
 
 namespace oofem {
 
-    void NRFunctionContactSegment2D::computeDistanceVector(FloatArray & answer, const FloatArray & nodeCoords)
+    void NRFunctionContactSegment2D::computeContactPoint(FloatArray & answer, FloatArray& normal, const FloatArray & nodeCoords)
     {
         if ( nodeCoords.giveSize() != 2 ) {
             OOFEM_ERROR("An incompatible coordinate size (%i) encountered. Algorithm is only for 2D functions.", nodeCoords.giveSize());
@@ -33,9 +33,21 @@ namespace oofem {
         if ( k >= maxiter ) OOFEM_WARNING("Searching for contact with analytical function: Newton-Rhapson method did not converge in %i iterations. Continuing.", k);
 
         //we found the contact point
-        FloatArray contactPoint(2);
-        contactPoint.at(1) = x_c;
-        contactPoint.at(2) = functionValue(x_c);
-        answer.beDifferenceOf(contactPoint, nodeCoords);
+        //FloatArray contactPoint(2); -- now contact point is the answer and normal is an additional answer
+        answer.at(1) = x_c;
+        answer.at(2) = functionValue(x_c);
+
+        //now we have contact point, what we need is the normal at the point of contact
+        //can be obtained as a derivative of the function
+        //the tangent is in the form
+        // y = k*x
+        double k = derivativeValue(x_c);
+        //therefore
+        // k*x - y = 0
+        //and (k, -1) is the normal vector to the tangent line
+        normal.resize(2);
+        normal.at(1) = k;
+        normal.at(2) = -1.;
+        normal.normalize();
     }
 }
