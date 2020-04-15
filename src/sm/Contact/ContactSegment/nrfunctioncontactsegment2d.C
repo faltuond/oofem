@@ -20,11 +20,12 @@ namespace oofem {
         //Newton-Raphson, inital guess x_node
         double x_c = x_node;
         double g, h;
-        double k = 0; //iterator
-        double maxiter = NRFunctionContact_Maxiter, tol = NRFunctionContact_Tolerance;
+        int k = 0; //iterator
+        int maxiter = NRFunctionContact_Maxiter;
+        double tol = NRFunctionContact_Tolerance;
         while ( k < maxiter ) {
             g = 2. * x_c - 2. * x_node + 2. * functionValue(x_c)*derivativeValue(x_c) - 2. * y_node*derivativeValue(x_c);
-            if ( g <= tol ) break;
+            if ( abs(g) <= tol ) break;
             h = 2. + 2.*functionValue(x_c)*doubleDerivativeValue(x_c) + 2.*derivativeValue(x_c)*derivativeValue(x_c) - 2.*y_node*doubleDerivativeValue(x_c);
             x_c += -g / h;
             k++;
@@ -34,20 +35,23 @@ namespace oofem {
 
         //we found the contact point
         //FloatArray contactPoint(2); -- now contact point is the answer and normal is an additional answer
+        answer.resize(2);
         answer.at(1) = x_c;
         answer.at(2) = functionValue(x_c);
 
         //now we have contact point, what we need is the normal at the point of contact
         //can be obtained as a derivative of the function
         //the tangent is in the form
-        // y = k*x
-        double k = derivativeValue(x_c);
+        // y = slope*x
+        double slope = derivativeValue(x_c);
         //therefore
-        // k*x - y = 0
-        //and (k, -1) is the normal vector to the tangent line
+        // slope*x - y = 0
+        //and (slope, -1) is the normal vector to the tangent line
         normal.resize(2);
-        normal.at(1) = k;
+        normal.at(1) = slope;
         normal.at(2) = -1.;
         normal.normalize();
+
+        normal.times(-1.);
     }
 }

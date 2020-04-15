@@ -31,8 +31,10 @@ namespace oofem {
         normal = projection;
         normal.normalize();
 
+        normal.times(-1.);
+
         //now compute contact point by adding to node coords the distance to circle
-        double centerDistance = answer.computeNorm();
+        double centerDistance = projection.computeNorm();
         projection.times((centerDistance - radius) / centerDistance);
         answer = nodeCoords;
         answer.add(projection);

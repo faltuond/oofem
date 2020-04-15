@@ -38,31 +38,45 @@ namespace oofem {
         StructuralElement* elem = (StructuralElement*)this->giveDomain()->giveElement(closestEdge.at(1));
         int edgePos = closestEdge.at(2);
 
-        FloatArray normal, edgeVector, edgeNode1Coords, edgeNode2Coords, nodeCoords;
+        FloatArray cPoint, cPointLocal, normal, edgeVector, edgeNode1Coords, edgeNode2Coords, nodeCoords;
 
         IntArray edgeNodes;
         elem->giveBoundaryEdgeNodes(edgeNodes, edgePos);
 
         node->giveUpdatedCoordinates(nodeCoords, tStep);
 
-	    elem->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
-	    elem->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
+        elem->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
+        elem->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
 
-        bool inbetween = computeDistanceVector(normal, nodeCoords, edgeNode1Coords, edgeNode2Coords);
+        bool inbetween = computeContactPoint(cPoint, nodeCoords, edgeNode1Coords, edgeNode2Coords);
         //no need to care here whether distance is negative or not
 
-        if ( true || inbetween ) { //attempt to fix concave problem
-            answer = normal;
-            //normalize according to normalization mode specified
-            if ( normmode != NM_Never ) {
-                double norm = answer.computeNorm();
-                if ( (normmode == NM_Always || norm > 1.0e-8) && norm != 0 ) answer.times(1. / norm);
-            }
+        //retrieve edge normal from element interpolation
+        FEInterpolation2d* interpolation = dynamic_cast<FEInterpolation2d*>(elem->giveInterpolation());
+        if ( interpolation == nullptr ) {
+            OOFEM_ERROR("Non-2D element encountered in ElementEdgeContactSegment");
         }
-        else {
-            //todo maybe force reestablishing closest edge? instead of automatically giving up
-            answer.resize(2);
-        }
+
+        interpolation->global2local(cPointLocal, cPoint, FEIElementGeometryWrapper(elem));
+        interpolation->edgeEvalNormal(normal, edgePos, cPointLocal, FEIElementGeometryWrapper(elem));
+
+        //contact normal is defined as going towards the edge
+        normal.times(-1.);
+        answer = normal;
+
+
+        //if ( true || inbetween ) { //attempt to fix concave problem
+        //    answer = normal;
+        //    //normalize according to normalization mode specified
+        //    if ( normmode != NM_Never ) {
+        //        double norm = answer.computeNorm();
+        //        if ( (normmode == NM_Always || norm > 1.0e-8) && norm != 0 ) answer.times(1. / norm);
+        //    }
+        //}
+        //else {
+        //    //todo maybe force reestablishing closest edge? instead of automatically giving up
+        //    answer.resize(2);
+        //}
     }
 
     void ElementEdgeContactSegment::computeExtendedNMatrix(FloatMatrix & answer, Node * node, TimeStep * tStep)
@@ -80,7 +94,7 @@ namespace oofem {
         int edgePos = closestEdge.at(2);
 
         FloatMatrix N;
-        FloatArray contactPointCoords, dummyNormal, nodeCoords, edgeNode1Coords, edgeNode2Coords;
+        FloatArray cPoint, dummyNormal, nodeCoords, edgeNode1Coords, edgeNode2Coords;
         IntArray edgeNodes;
         elem->giveBoundaryEdgeNodes(edgeNodes, edgePos);
 
@@ -89,12 +103,12 @@ namespace oofem {
 	    elem->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
 
 
-        bool inbetween = computeDistanceVector(dummyNormal, nodeCoords, edgeNode1Coords, edgeNode2Coords, &contactPointCoords);
+        bool inbetween = computeContactPoint(cPoint, nodeCoords, edgeNode1Coords, edgeNode2Coords);
 
         //all the previous just to compute the contact point...
 
         FloatArray lcoords;
-        elem->giveInterpolation()->global2local(lcoords, contactPointCoords, FEIElementGeometryWrapper(elem));
+        elem->giveInterpolation()->global2local(lcoords, cPoint, FEIElementGeometryWrapper(elem));
         elem->computeEdgeNMatrix(N, edgePos, lcoords);
 
         answer.resize(N.giveNumberOfRows(), N.giveNumberOfColumns() + 2);
@@ -118,8 +132,8 @@ namespace oofem {
             return 0.0;
         }
 
-        FloatArray normal, edgeNode1Coords, edgeNode2Coords, nodeCoords;
-        FloatArray normalInit, edgeNode1CoordsInit, edgeNode2CoordsInit, nodeCoordsInit;
+        FloatArray cPoint, projection, edgeNode1Coords, edgeNode2Coords, nodeCoords;
+        FloatArray cPointInit, projectionInit, edgeNode1CoordsInit, edgeNode2CoordsInit, nodeCoordsInit;
         IntArray edgeNodes;
 
         node->giveUpdatedCoordinates(nodeCoords, tStep);
@@ -134,15 +148,17 @@ namespace oofem {
         edgeNode1CoordsInit = element->giveNode(edgeNodes(0))->giveNodeCoordinates();
 	    edgeNode2CoordsInit = element->giveNode(edgeNodes(1))->giveNodeCoordinates();
 
-        bool inbetween = computeDistanceVector(normal, nodeCoords, edgeNode1Coords, edgeNode2Coords);
-        bool inbetweenInit = computeDistanceVector(normalInit, nodeCoordsInit, edgeNode1CoordsInit, edgeNode2CoordsInit);
+        bool inbetween = computeContactPoint(cPoint, nodeCoords, edgeNode1Coords, edgeNode2Coords);
+        bool inbetweenInit = computeContactPoint(cPointInit, nodeCoordsInit, edgeNode1CoordsInit, edgeNode2CoordsInit);
+        projection.beDifferenceOf(cPoint, nodeCoords);
+        projectionInit.beDifferenceOf(cPointInit, nodeCoordsInit);
 
         //test whether initial and current vector are on different sides of line
         //find whether their cosine is larger than zero
-        double cos = normal.dotProduct(normalInit);
+        double cos = projection.dotProduct(projectionInit);
         bool penetrated = cos <= 0;
 
-        double answer = normal.computeNorm();
+        double answer = projection.computeNorm();
         if ( penetrated ) answer *= -1;
 
         return answer;
@@ -191,7 +207,7 @@ namespace oofem {
         //if previous if failed, it means that we don't know the closest edge to this node yet
         answer.resize(2);
 
-        FloatArray normal, edgeNode1Coords, edgeNode2Coords, nodeCoords;
+        FloatArray cPoint, projection, edgeNode1Coords, edgeNode2Coords, nodeCoords;
         IntArray edgeNodes;
         double answerSize = -1.;
 
@@ -208,10 +224,11 @@ namespace oofem {
 	        element->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
 
 
-            bool inbetween = computeDistanceVector(normal, nodeCoords, edgeNode1Coords, edgeNode2Coords);
+            bool inbetween = computeContactPoint(cPoint, nodeCoords, edgeNode1Coords, edgeNode2Coords);
+            projection.beDifferenceOf(cPoint, nodeCoords);
 
             if ( inbetween ) {
-                double normalSize = normal.computeNorm();
+                double normalSize = projection.computeNorm();
                 if ( answerSize == -1. || normalSize < answerSize ) {
                     //new minimum found, update answer
                     answerSize = normalSize;
@@ -230,7 +247,7 @@ namespace oofem {
         lastEdge = answer;
     }
 
-    bool ElementEdgeContactSegment::computeDistanceVector(FloatArray & answer, const FloatArray & externalPoint, const FloatArray & linePoint1, const FloatArray & linePoint2, /*optional*/ FloatArray * contactPointCoords)
+    bool ElementEdgeContactSegment::computeContactPoint(FloatArray & answer, const FloatArray & externalPoint, const FloatArray & linePoint1, const FloatArray & linePoint2)
     {
 
         //convert edgevector to an equation
@@ -256,21 +273,17 @@ namespace oofem {
 
         //now we have to find the intersecting point
         double divider = ae * bn - an * be;//should only be zero if lines are parallel
-        FloatArray contactPoint(2);
-        contactPoint.at(1) = -(ce*bn - cn * be) / divider;
-        contactPoint.at(2) = -(ae*cn - an * ce) / divider;
+        //FloatArray contactPoint(2);
+        answer.resize(2);
+        answer.at(1) = -(ce*bn - cn * be) / divider;
+        answer.at(2) = -(ae*cn - an * ce) / divider;
 
-        answer.beDifferenceOf(contactPoint, externalPoint);
-
-        if ( contactPointCoords != nullptr ) {
-            contactPointCoords->resize(2);
-            contactPointCoords->at(1) = contactPoint.at(1);
-            contactPointCoords->at(2) = contactPoint.at(2);
-        }
+        //answer.beDifferenceOf(contactPoint, externalPoint);
+        //now the contact point is the answer rather than the projection
 
         double lineLength = abs(linePoint1(0) - linePoint2(0));
         //point lies inbetween line points if it is closer to both than length of line
-        return abs(contactPoint(0) - linePoint1(0)) <= lineLength && abs(contactPoint(0) - linePoint2(0)) <= lineLength;
+        return abs(answer(0) - linePoint1(0)) <= lineLength && abs(answer(0) - linePoint2(0)) <= lineLength;
     }
 
     void ElementEdgeContactSegment::updateYourself(TimeStep *tStep)
