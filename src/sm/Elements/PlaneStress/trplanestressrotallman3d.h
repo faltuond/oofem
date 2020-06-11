@@ -101,6 +101,9 @@ public:
     { return ( ( ext == Element_SurfaceLoadSupport ) ? 1 : 0 ); }
 
     void printOutputAt(FILE *file, TimeStep *tStep) override;
+
+    //void computeBHmatrixAt(const FloatArray& ncoords, FloatMatrix &answer) override;
+    void computeBHmatrixAt(GaussPoint* gp, FloatMatrix &answer) override;
 };
 } // end namespace oofem
 #endif //  trplanestressrotallman3d_h

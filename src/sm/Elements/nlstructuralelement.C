@@ -81,7 +81,7 @@ NLStructuralElement :: computeCurrentVolume(TimeStep *tStep)
 
 
 void
-NLStructuralElement :: computeDeformationGradientVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep)
+NLStructuralElement :: computeDeformationGradientVector(FloatArray &answer, const FloatArray &ncoords /*GaussPoint * gp*/, TimeStep *tStep)
 {
     // Computes the deformation gradient in the Voigt format at the Gauss point gp of
     // the receiver at time step tStep.
@@ -96,11 +96,13 @@ NLStructuralElement :: computeDeformationGradientVector(FloatArray &answer, Gaus
 
     // Displacement gradient H = du/dX
     FloatMatrix B;
-    this->computeBHmatrixAt(gp, B);
+    this->computeBHmatrixAt(ncoords, B);
+    //this->computeBHmatrixAt(gp->giveNaturalCoordinates(), B);
+    //this->computeBHmatrixAt(gp, B);
     answer.beProductOf(B, u);
 
     // Deformation gradient F = H + I
-    MaterialMode matMode = gp->giveMaterialMode();
+    MaterialMode matMode = this->giveMaterialMode();
     if ( matMode == _3dMat || matMode == _PlaneStrain ) {
         answer.at(1) += 1.0;
         answer.at(2) += 1.0;
