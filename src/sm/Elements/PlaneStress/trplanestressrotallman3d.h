@@ -102,8 +102,6 @@ public:
 
     void printOutputAt(FILE *file, TimeStep *tStep) override;
 
-    //void computeBHmatrixAt(const FloatArray& ncoords, FloatMatrix &answer) override;
-    void computeBHmatrixAt(GaussPoint* gp, FloatMatrix &answer) override;
 };
 } // end namespace oofem
 #endif //  trplanestressrotallman3d_h

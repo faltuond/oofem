@@ -81,7 +81,7 @@ Structural3DElement :: computeBmatrixAt(GaussPoint *gp, FloatMatrix &answer, int
 
 
 void
-Structural3DElement ::computeBHmatrixAtCoords(const FloatArray &ncoords, FloatMatrix &answer)
+Structural3DElement ::computeBHmatrixAt(const FloatArray &ncoords, FloatMatrix &answer)
 // Returns the [ 9 x (nno * 3) ] displacement gradient matrix {BH} of the receiver,
 // evaluated at gp.
 // BH matrix  -  9 rows : du/dx, dv/dy, dw/dz, dv/dz, du/dz, du/dy, dw/dy, dw/dx, dv/dx

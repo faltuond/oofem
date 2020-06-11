@@ -89,7 +89,7 @@ public:
 
 protected:
     void computeBmatrixAt(GaussPoint *gp, FloatMatrix &answer, int lowerIndx = 1, int upperIndx = ALL_STRAINS) override = 0;
-    void computeBHmatrixAt(GaussPoint *gp, FloatMatrix &answer) override = 0;
+    void computeBHmatrixAt(const FloatArray &ncoords, FloatMatrix &answer) override = 0;
     void computeGaussPoints() override;
 
     void giveMaterialOrientationAt( FloatArray &x, FloatArray &y, const FloatArray &lcoords);
@@ -113,6 +113,7 @@ public:
 
 protected:
     void computeBmatrixAt(GaussPoint *gp, FloatMatrix &answer, int lowerIndx = 1, int upperIndx = ALL_STRAINS) override;
+
     using NLStructuralElement::computeBHmatrixAt;
     void computeBHmatrixAt(const FloatArray &ncoords, FloatMatrix &answer) override;
 };

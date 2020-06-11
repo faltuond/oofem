@@ -83,6 +83,7 @@ public:
 
 protected:
     void computeBmatrixAt(GaussPoint *gp, FloatMatrix &answer, int lowerIndx = 1, int upperIndx = ALL_STRAINS) override;
+
     using NLStructuralElement::computeBHmatrixAt;
     void computeBHmatrixAt(const FloatArray &ncoords, FloatMatrix &answer) override;
     void computeGaussPoints() override;
