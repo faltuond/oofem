@@ -2587,4 +2587,30 @@ StructuralMaterial :: giveInputRecord(DynamicInputRecord &input)
     Material :: giveInputRecord(input);
     input.setField(this->referenceTemperature, _IFT_StructuralMaterial_referencetemperature);
 }
+
+void StructuralMaterial::compute_2order_tensor_cross_product(FloatMatrix &answer, const FloatArray &a, const FloatArray &b)
+{
+
+    answer.resize(3, 3);
+    answer.zero();
+
+
+    FloatMatrix lc;
+    lc.beLeviCivitaTensor();
+
+    for ( int i = 1; i <= 3; i++ ) {
+        for ( int j = 1; j <= 3; j++ ) {
+            for ( int k = 1; k <= 3; k++ ) {
+                for ( int m = 1; m <= 3; m++ ) {
+                    for ( int l = 1; l <= 3; l++ ) {
+                        for ( int n = 1; n <= 3; n++ ) {
+                            answer.at(i, j) += lc.at(giveVI(i, k), l) * lc.at(giveVI(j, m), n) * a.at(giveVI(k, m)) * b.at(giveVI(l, n));
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 } // end namespace oofem

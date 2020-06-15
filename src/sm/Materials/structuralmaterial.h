@@ -701,6 +701,8 @@ public:
     friend class StructuralCrossSection;
     friend class SimpleCrossSection;
     friend class LayeredCrossSection;
+
+    static void compute_2order_tensor_cross_product(FloatMatrix &answer, const FloatArray &a, const FloatArray &b);
 };
 } // end namespace oofem
 #endif // structuralmaterial_h
