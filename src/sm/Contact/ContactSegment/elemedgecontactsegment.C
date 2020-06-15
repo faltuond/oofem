@@ -60,6 +60,11 @@ namespace oofem {
         interpolation->global2local(cPointLocal, cPoint, FEIElementGeometryWrapper(elem));
         interpolation->edgeEvalNormal(normal, edgePos, cPointLocal, FEIElementGeometryWrapper(elem));
 
+        //if element geometry is nonlinear, normal should be converted to deformed configuration
+        NLStructuralElement* nlelem = dynamic_cast<NLStructuralElement*>(elem);
+        if ( nlelem && nlelem->giveGeometryMode() == 1 ) transformNormalToDeformedShape(normal, nlelem, cPointLocal, tStep);
+
+
         //contact normal is defined as going towards the edge
         normal.times(-1.);
         answer = normal;
@@ -194,6 +199,19 @@ namespace oofem {
 
             answer.followedBy(edgeloc);
         }
+    }
+
+    void ElementEdgeContactSegment::transformNormalToDeformedShape(FloatArray& normal, NLStructuralElement * elem, const FloatArray& lcoords, TimeStep* tStep)
+    {
+        FloatArray F;
+        elem->computeDeformationGradientVector(F, lcoords, tStep);
+        //compute cofactor and multiply by normal
+
+        FloatMatrix cofactor;
+        StructuralMaterial::compute_2order_tensor_cross_product(cofactor, F, F);
+        cofactor.times(0.5);
+
+        normal.beProductOf(cofactor, normal);
     }
 
     void ElementEdgeContactSegment::giveClosestEdge(IntArray & answer, Node * node, TimeStep * tStep)

@@ -42,6 +42,8 @@
 #include "set.h"
 #include "feinterpol.h"
 #include "feinterpol2d.h"
+#include "Elements/nlstructuralelement.h"
+#include "Materials/structuralmaterial.h"
 
 #define _IFT_ElementEdgeContactSegment_Name "elementedgecontactsegment"
 #define _IFT_ElementEdgeContactSegment_edgeSet "edgeset"
@@ -87,7 +89,7 @@ namespace oofem {
         UpdateMode updateMode;
 
 
-
+        void transformNormalToDeformedShape(FloatArray& normal, NLStructuralElement* elem, const FloatArray & lcoords, TimeStep *tStep);
 
         //gives the closest edge to a given node in the form of an IntArray(elempos,edgepos)
         //only computes it again if it wasn't determined for this node in this solution step yet
