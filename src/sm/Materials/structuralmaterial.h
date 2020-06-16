@@ -703,6 +703,7 @@ public:
     friend class LayeredCrossSection;
 
     static void compute_2order_tensor_cross_product(FloatMatrix &answer, const FloatArray &a, const FloatArray &b);
+    static void compute_tensor_cross_product_tensor(FloatMatrix &answer, const FloatArray &a);
 };
 } // end namespace oofem
 #endif // structuralmaterial_h

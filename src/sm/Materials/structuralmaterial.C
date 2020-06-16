@@ -2613,4 +2613,29 @@ void StructuralMaterial::compute_2order_tensor_cross_product(FloatMatrix &answer
     }
 }
 
+void
+StructuralMaterial::compute_tensor_cross_product_tensor(FloatMatrix &answer, const FloatArray &a)
+{
+
+    answer.resize(9, 9);
+    answer.zero();
+
+    FloatMatrix lc;
+    lc.beLeviCivitaTensor();
+
+    for ( int i = 1; i <= 3; i++ ) {
+        for ( int j = 1; j <= 3; j++ ) {
+            for ( int r = 1; r <= 3; r++ ) {
+                for ( int s = 1; s <= 3; s++ ) {
+                    for ( int k = 1; k <= 3; k++ ) {
+                        for ( int m = 1; m <= 3; m++ ) {
+                            answer.at(giveVI(i, j), giveVI(r, s)) += lc.at(giveVI(i, r), k) * lc.at(giveVI(j, s), m) * a.at(giveVI(k, m));
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 } // end namespace oofem
