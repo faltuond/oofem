@@ -27,6 +27,11 @@ namespace oofem {
         return 0.0;
     }
 
+    void QElementEdgeContactSegment::computeNormalSlope(FloatArray & answer, Node * node, TimeStep * tStep)
+    {
+        answer.resize(2 * node->giveNumberOfDofs());
+    }
+
     void QElementEdgeContactSegment::giveLocationArray(const IntArray & dofIdArray, IntArray & s_loc, const UnknownNumberingScheme & c_s)
     {
 

@@ -57,6 +57,14 @@ namespace oofem {
         return answer;
     }
 
+    void FunctionContactSegment::computeNormalSlope(FloatArray & answer, Node * node, TimeStep * tStep)
+    {
+        //the answer shall be a vector of zeros, size 6 for 2D applications and 9 for 3D
+        int ndofs = node->giveNumberOfDofs();
+        answer.resize(3 * ndofs);
+        answer.zero();
+    }
+
     void FunctionContactSegment::giveLocationArray(const IntArray & dofIdArray, IntArray & s_loc, const UnknownNumberingScheme & c_s)
     {
         s_loc.resize(0);

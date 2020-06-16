@@ -99,7 +99,7 @@ namespace oofem {
         int edgePos = closestEdge.at(2);
 
         FloatMatrix N;
-        FloatArray cPoint, dummyNormal, nodeCoords, edgeNode1Coords, edgeNode2Coords;
+        FloatArray cPoint, nodeCoords, edgeNode1Coords, edgeNode2Coords;
         IntArray edgeNodes;
         elem->giveBoundaryEdgeNodes(edgeNodes, edgePos);
 
@@ -167,6 +167,77 @@ namespace oofem {
         if ( penetrated ) answer *= -1;
 
         return answer;
+    }
+
+    void ElementEdgeContactSegment::computeNormalSlope(FloatArray & answer, Node * node, TimeStep * tStep)
+    {
+        IntArray closestEdge;
+        giveClosestEdge(closestEdge, node, tStep);
+        if ( closestEdge.giveSize() != 2 ) {
+            //no closest edge means no contact
+            //SIZE ????
+            answer.resize(6);
+            return;
+        }
+        int edgePos = closestEdge.at(2);
+
+        StructuralElement* elem = (StructuralElement*)this->giveDomain()->giveElement(closestEdge.at(1));
+        NLStructuralElement * nlelem = dynamic_cast<NLStructuralElement*> (elem);
+        if ( nlelem == nullptr || nlelem->giveGeometryMode() != 1 ) {
+            //there is no geometrical non-linearity
+            answer.resize(6);
+            return;
+        }
+
+        FloatArray cPoint, nodeCoords, edgeNode1Coords, edgeNode2Coords;
+        IntArray edgeNodes;
+        elem->giveBoundaryEdgeNodes(edgeNodes, edgePos);
+
+        node->giveUpdatedCoordinates(nodeCoords, tStep);
+        elem->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
+        elem->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
+
+
+        bool inbetween = computeContactPoint(cPoint, nodeCoords, edgeNode1Coords, edgeNode2Coords);
+
+        //all the previous just to compute the contact point...
+
+        FloatArray lcoords;
+        elem->giveInterpolation()->global2local(lcoords, cPoint, FEIElementGeometryWrapper(elem));
+
+        //the term we are supposed to return is
+        // 1/||n|| (n_0 . (F X) + (n/||n||) x (F X) : (n/||n||) x n_0) Bh
+        //where
+        // n is the deformed normal, n_0 the original normal
+        // F is the deformation gradient at contact point
+        // Bh is the BH matrix at contact point
+        // . represents single contraction, : double contraction, x a dyadic product and X a tensor cross product
+
+        FloatArray n, n_norm, n0; // 2x1
+        FloatArray Fv; // 6x1
+        double n_size = 0.;
+        FloatMatrix Bh;
+        FloatMatrix F; //3x3
+        FloatMatrix F_cross; //9x9
+
+        nlelem->computeDeformationGradientVector(Fv, lcoords, tStep);
+
+        //retrieve edge normal from element interpolation
+        FEInterpolation2d* interpolation = dynamic_cast<FEInterpolation2d*>(elem->giveInterpolation());
+        if ( interpolation == nullptr ) {
+            OOFEM_ERROR("Non-2D element encountered in ElementEdgeContactSegment");
+        }
+        interpolation->edgeEvalNormal(n0, edgePos, lcoords, FEIElementGeometryWrapper(elem));
+        n = n0;
+        transformNormalToDeformedShape(n, nlelem, lcoords, tStep);
+        n_size = n.computeNorm();
+        n_norm = n;
+        n_norm.times(1. / n_size);
+
+        StructuralMaterial::compute_tensor_cross_product_tensor(F_cross, Fv);
+        nlelem->computeBHmatrixAt(lcoords, Bh);
+
+        //TODO assemble together. Do tensor sizes agree??
     }
 
     void ElementEdgeContactSegment::giveLocationArray(const IntArray & dofIdArray, IntArray & answer, const UnknownNumberingScheme & c_s)

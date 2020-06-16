@@ -73,9 +73,10 @@ namespace oofem {
         FloatMatrix K;
         IntArray loc, node_loc;
 
-        IntArray dofIdArray = {
+        IntArray dofIdArray = giveDomain()->giveDefaultNodeDofIDArry();
+        /*IntArray dofIdArray = {
           D_u, D_v
-        };
+        };*/
 
         //iterate over all pairs of nodes and segments
         for ( int nodePos = 1; nodePos <= nodeSet.giveSize(); ++nodePos ) {
@@ -106,10 +107,10 @@ namespace oofem {
             return;
         }
 
-        //IntArray dofIdArray = {D_u, D_v, D_w};
-        IntArray dofIdArray = {
+        IntArray dofIdArray = giveDomain()->giveDefaultNodeDofIDArry();
+        /*IntArray dofIdArray = {
           D_u, D_v
-        };
+        };*/
 
         IntArray loc, node_loc;
         FloatArray fext;
@@ -206,18 +207,28 @@ namespace oofem {
     
     void Node2SegmentPenaltyContact::computeTangentFromContact(FloatMatrix & answer, Node * node, ContactSegment * segment, TimeStep * tStep)
     {
-        //considering that the tangent is given as
-        //int across seg (N^T * (n x n) * N), which is equivalent to
-        //int across seg ((N^T * n) * (N^T * n)^T)
-        //it is sufficient just to dyadically multiply the "normals"
-
         double gap;
-        FloatArray Nv;
         this->computeGap(gap, node, segment, tStep);
+
+        //assembling the first part of the tangent
+        //considering Nv = N^T * n/||n||
+        //and         K1 = p * (Nv*Nv^T)
+        FloatArray Nv;
         this->computeNormalMatrixAt(Nv, node, segment, tStep);
         answer.beDyadicProductOf(Nv, Nv);
         answer.times(this->penalty);
+
+        //assembling the second part of the tangent (for large deformations)
+        FloatMatrix k2;
+        FloatArray Ns;
+        segment->computeNormalSlope(Ns, node, tStep);
+        k2.beDyadicProductOf(Nv, Ns);
+        k2.times(- gap * penalty);
+
+        //zero in the case of no contact occuring
         if ( gap >= 0.0 ) answer.zero();
+
+
     }
 
 
