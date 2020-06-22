@@ -224,6 +224,7 @@ namespace oofem {
         segment->computeNormalSlope(Ns, node, tStep);
         k2.beDyadicProductOf(Nv, Ns);
         k2.times(- gap * penalty);
+        answer.add(k2);
 
         //zero in the case of no contact occuring
         if ( gap >= 0.0 ) answer.zero();

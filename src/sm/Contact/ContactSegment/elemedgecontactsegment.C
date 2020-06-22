@@ -214,11 +214,11 @@ namespace oofem {
         // . represents single contraction, : double contraction, x a dyadic product and X a tensor cross product
 
         FloatArray n, n_norm, n0; // 2x1
-        FloatArray Fv; // 6x1
+        FloatArray Fv; // 4x1
         double n_size = 0.;
-        FloatMatrix Bh;
-        FloatMatrix F; //3x3
-        FloatMatrix F_cross; //9x9
+        FloatMatrix Bh; // 4x8 <--- problem??
+        FloatMatrix F; //2x2
+        FloatMatrix F_cross; //4x4
 
         nlelem->computeDeformationGradientVector(Fv, lcoords, tStep);
 
@@ -238,6 +238,14 @@ namespace oofem {
         nlelem->computeBHmatrixAt(lcoords, Bh);
 
         //TODO assemble together. Do tensor sizes agree??
+
+        FloatMatrix nnorm_x_n0; // n_norm x n0 <--- 2nd order tensor
+        nnorm_x_n0.beDyadicProductOf(n_norm, n0); //4x4
+
+        FloatMatrix Fcross_times_nnorm_x_n0; // (F X) : (n_norm x n0) <--- 2nd order tensor
+        Fcross_times_nnorm_x_n0.beProductOf(F_cross, nnorm_x_n0); //4x4
+
+        FloatMatrix nnorm_x_Fcross_times_nnorm_x_n0; // n_norm x ((F X) : (n_norm x n0)) <--- should be 3rd order tensor
     }
 
     void ElementEdgeContactSegment::giveLocationArray(const IntArray & dofIdArray, IntArray & answer, const UnknownNumberingScheme & c_s)
