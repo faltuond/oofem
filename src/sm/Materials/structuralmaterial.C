@@ -2590,21 +2590,21 @@ StructuralMaterial :: giveInputRecord(DynamicInputRecord &input)
 
 void StructuralMaterial::compute_2order_tensor_cross_product(FloatMatrix &answer, const FloatArray &a, const FloatArray &b)
 {
-
-    answer.resize(3, 3);
+    //the hardcoded dimensions are a terrible placeholder only suitable for 2D applications
+    answer.resize(2, 2);
     answer.zero();
 
 
     FloatMatrix lc;
     lc.beLeviCivitaTensor();
 
-    for ( int i = 1; i <= 3; i++ ) {
-        for ( int j = 1; j <= 3; j++ ) {
-            for ( int k = 1; k <= 3; k++ ) {
-                for ( int m = 1; m <= 3; m++ ) {
-                    for ( int l = 1; l <= 3; l++ ) {
-                        for ( int n = 1; n <= 3; n++ ) {
-                            answer.at(i, j) += lc.at(giveVI(i, k), l) * lc.at(giveVI(j, m), n) * a.at(giveVI(k, m)) * b.at(giveVI(l, n));
+    for ( int i = 1; i <= 2; i++ ) {
+        for ( int j = 1; j <= 2; j++ ) {
+            for ( int k = 1; k <= 2; k++ ) {
+                for ( int m = 1; m <= 2; m++ ) {
+                    for ( int l = 1; l <= 2; l++ ) {
+                        for ( int n = 1; n <= 2; n++ ) {
+                            answer.at(i, j) += lc.at(giveVI2D(i, k), l) * lc.at(giveVI2D(j, m), n) * a.at(giveVI2D(k, m)) * b.at(giveVI2D(l, n));
                         }
                     }
                 }
@@ -2613,23 +2613,43 @@ void StructuralMaterial::compute_2order_tensor_cross_product(FloatMatrix &answer
     }
 }
 
+int StructuralMaterial::giveVI2D(const int i1, const int i2) {
+    //ultimate placeholder function
+    if ( i1 == 1 && i2 == 1 ) {
+        return 1;
+    }
+    else if(i1 == 1 && i2 == 2) {
+        return 3;
+    }
+    else if ( i1 == 2 && i2 == 1 ) {
+        return 4;
+    }
+    else if ( i1 == 2 && i2 == 2 ) {
+        return 2;
+    }
+    else {
+        return -1;
+        //cannot do oofem error here as it is not static (why...)
+    }
+}
+
 void
 StructuralMaterial::compute_tensor_cross_product_tensor(FloatMatrix &answer, const FloatArray &a)
 {
-
-    answer.resize(9, 9);
+    //the hardcoded dimensions are a terrible placeholder only suitable for 2D applications
+    answer.resize(4, 4); 
     answer.zero();
 
     FloatMatrix lc;
     lc.beLeviCivitaTensor();
 
-    for ( int i = 1; i <= 3; i++ ) {
-        for ( int j = 1; j <= 3; j++ ) {
-            for ( int r = 1; r <= 3; r++ ) {
-                for ( int s = 1; s <= 3; s++ ) {
-                    for ( int k = 1; k <= 3; k++ ) {
-                        for ( int m = 1; m <= 3; m++ ) {
-                            answer.at(giveVI(i, j), giveVI(r, s)) += lc.at(giveVI(i, r), k) * lc.at(giveVI(j, s), m) * a.at(giveVI(k, m));
+    for ( int i = 1; i <= 2; i++ ) {
+        for ( int j = 1; j <= 2; j++ ) {
+            for ( int r = 1; r <= 2; r++ ) {
+                for ( int s = 1; s <= 2; s++ ) {
+                    for ( int k = 1; k <= 2; k++ ) {
+                        for ( int m = 1; m <= 2; m++ ) {
+                            answer.at(giveVI2D(i, j), giveVI2D(r, s)) += lc.at(giveVI2D(i, r), k) * lc.at(giveVI2D(j, s), m) * a.at(giveVI2D(k, m));
                         }
                     }
                 }

@@ -704,6 +704,7 @@ public:
 
     static void compute_2order_tensor_cross_product(FloatMatrix &answer, const FloatArray &a, const FloatArray &b);
     static void compute_tensor_cross_product_tensor(FloatMatrix &answer, const FloatArray &a);
+    static int giveVI2D(const int i1, const int i2);
 };
 } // end namespace oofem
 #endif // structuralmaterial_h
