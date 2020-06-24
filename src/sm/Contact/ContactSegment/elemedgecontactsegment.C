@@ -235,17 +235,50 @@ namespace oofem {
         n_norm.times(1. / n_size);
 
         StructuralMaterial::compute_tensor_cross_product_tensor(F_cross, Fv);
-        nlelem->computeBHmatrixAt(lcoords, Bh);
+        nlelem->computeEdgeBHmatrixAt(Bh, edgePos, lcoords);
+        //elem->compudeEdgeBHMatrixAt()
+        // to bude volat interpolaci
+        // v ní bude edgeEvaldNdx() viz EdgeEvalNormal a evaldNdX a 1D prvek
+        //jakobian (det J) delka hrany prvku
 
         //TODO assemble together. Do tensor sizes agree??
 
         FloatMatrix nnorm_x_n0; // n_norm x n0 <--- 2nd order tensor
-        nnorm_x_n0.beDyadicProductOf(n_norm, n0); //4x4
+        nnorm_x_n0.beDyadicProductOf(n_norm, n0); //2x2
+        FloatArray nnorm_x_n0_v;
+        nnorm_x_n0_v.beVectorForm(nnorm_x_n0);//transformed to 4x1
 
-        FloatMatrix Fcross_times_nnorm_x_n0; // (F X) : (n_norm x n0) <--- 2nd order tensor
-        Fcross_times_nnorm_x_n0.beProductOf(F_cross, nnorm_x_n0); //4x4
+        FloatArray Fcross_times_nnorm_x_n0_v; // (F X) : (n_norm x n0) <--- 2nd order tensor
+        Fcross_times_nnorm_x_n0_v.beProductOf(F_cross, nnorm_x_n0_v); //4x1
 
-        FloatMatrix nnorm_x_Fcross_times_nnorm_x_n0; // n_norm x ((F X) : (n_norm x n0)) <--- should be 3rd order tensor
+        FloatMatrix nnorm_x_Fcross_times_nnorm_x_n0; // n_norm x ((F X) : (n_norm x n0)) <--- 3rd order tensor
+        nnorm_x_Fcross_times_nnorm_x_n0.beDyadicProductOf(n_norm, Fcross_times_nnorm_x_n0_v); //2x4
+
+        FloatMatrix n0_dot_Fcross; // n0 . (F X) <--- 3rd order tensor
+        FloatMatrix n0_coeff_mat(2, 4); //matrix in the form ( (n1,  0,  0, n2)
+                                        //                     ( 0, n2, n1,  0) ) 
+        n0_coeff_mat.zero();
+        n0_coeff_mat.at(1, 1) = n0.at(1);
+        n0_coeff_mat.at(1, 4) = n0.at(1);
+        n0_coeff_mat.at(2, 2) = n0.at(2);
+        n0_coeff_mat.at(2, 3) = n0.at(2);
+        n0_dot_Fcross.beProductOf(n0_coeff_mat, F_cross); //2x4
+
+        FloatMatrix bracket; //(n_0 . (F X) + (n/||n || ) x(F X) : (n/||n || ) x n_0)
+        bracket = n0_dot_Fcross;
+        bracket.add(nnorm_x_Fcross_times_nnorm_x_n0); //2x4
+
+        FloatMatrix normal_slope;
+        normal_slope.beProductTOf(bracket, Bh); //2x2
+        normal_slope.times(1. / n_size);
+
+        //insert normal slope into the first 4 positions of answer
+        //the last 2 positions shall remain zero
+        FloatArray normal_slope_v;
+        normal_slope_v.beVectorForm(normal_slope);
+        answer.resize(6);
+        answer.addSubVector(normal_slope_v, 1);
+
     }
 
     void ElementEdgeContactSegment::giveLocationArray(const IntArray & dofIdArray, IntArray & answer, const UnknownNumberingScheme & c_s)
