@@ -260,6 +260,19 @@ public:
      * @todo
      */
     virtual void boundaryEdgeEvalN(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) = 0;
+    
+    /**
+     * Evaluates the derivatives of basis functions on the requested boundary
+     * Boundaries are defined as the corner nodes for 1D geometries, edges for 2D geometries and surfaces for 3D geometries.
+     * @param answer Array to be filled with the basis function derivatives.
+     * @param boundary Boundary number.
+     * @param lcoords The local coordinates (on the boundary local coordinate system).
+     * @param cellgeo Underlying cell geometry.
+     * @return The determinant of the boundary transformation Jacobian.
+     */
+    virtual void boundaryEdgeEvaldNdx(FloatMatrix& answer, int boundary, const FloatArray& lcoords) {
+        OOFEM_ERROR("not implemented");
+    }
     /**
      * Evaluates the determinant of the transformation Jacobian on the requested boundary.
      * Boundaries are defined as the corner nodes for 1D geometries, edges for 2D geometries and surfaces for 3D geometries.

@@ -248,6 +248,18 @@ public:
     }
 
     /**
+     * Computes a matrix which, multiplied by the column matrix of nodal displacements
+     * of a given edge, gives the displacement gradient stored by columns.
+     * The components of this matrix are derivatives of the shape functions,
+     * but they are arranged in a somewhat different way from the usual B matrix.
+     * @param ncoords The natural coordinates where the matrix shall be computed.
+     * @param answer BF matrix at this point.
+     */
+    void computeEdgeBHmatrixAt(FloatMatrix& answer, int edge, const FloatArray& ncoords) {
+        giveInterpolation()->boundaryEdgeEvaldNdx(answer, edge, ncoords);
+    }
+
+    /**
      * Computes a matrix which, multiplied by the column matrix of nodal displacements,
      * gives the displacement gradient stored by columns.
      * The components of this matrix are derivatives of the shape functions,
