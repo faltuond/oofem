@@ -259,9 +259,9 @@ namespace oofem {
                                         //                     ( 0, n2, n1,  0) ) 
         n0_coeff_mat.zero();
         n0_coeff_mat.at(1, 1) = n0.at(1);
-        n0_coeff_mat.at(1, 4) = n0.at(1);
+        n0_coeff_mat.at(1, 4) = n0.at(2);
         n0_coeff_mat.at(2, 2) = n0.at(2);
-        n0_coeff_mat.at(2, 3) = n0.at(2);
+        n0_coeff_mat.at(2, 3) = n0.at(1);
         n0_dot_Fcross.beProductOf(n0_coeff_mat, F_cross); //2x4
 
         FloatMatrix bracket; //(n_0 . (F X) + (n/||n || ) x(F X) : (n/||n || ) x n_0)
@@ -269,13 +269,13 @@ namespace oofem {
         bracket.add(nnorm_x_Fcross_times_nnorm_x_n0); //2x4
 
         FloatMatrix normal_slope;
-        normal_slope.beProductTOf(bracket, Bh); //2x2
+        normal_slope.beProductOf(bracket, Bh); //2x4
         normal_slope.times(1. / n_size);
 
         //insert normal slope into the first 4 positions of answer
         //the last 2 positions shall remain zero
         FloatArray normal_slope_v;
-        normal_slope_v.beVectorForm(normal_slope);
+        normal_slope_v.beVectorForm(normal_slope); //HOW?? sizes dont agree
         answer.resize(6);
         answer.addSubVector(normal_slope_v, 1);
 
