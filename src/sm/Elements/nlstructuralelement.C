@@ -536,4 +536,30 @@ NLStructuralElement :: checkConsistency()
         return 1;
     }
 }
+void NLStructuralElement::computeEdgeBHmatrixAt(FloatMatrix & answer, int edge, const FloatArray & ncoords)
+{
+    //giveInterpolation()->boundaryEdgeEvaldNdx(answer, edge, ncoords, FEIElementGeometryWrapper(this));
+    FloatMatrix BH;
+    this->computeBHmatrixAt(ncoords, BH);
+
+    IntArray edgeNodes;
+    this->giveBoundaryEdgeNodes(edgeNodes, edge);
+
+    //determine number of dofs per node
+    int dofsPerNode = giveNode(edgeNodes.at(1))->giveNumberOfDofs();
+    
+    answer.resize(BH.giveNumberOfRows(), edgeNodes.giveSize() * dofsPerNode);
+
+    for ( int edgeNodeIndex = 1; edgeNodeIndex <= edgeNodes.giveSize(); edgeNodeIndex++ ) {
+        for ( int dofIndex = 1; dofIndex <= dofsPerNode; dofIndex++ ) {
+            int edgeBHcolNumber = (edgeNodeIndex - 1)*dofsPerNode + dofIndex;
+            int BHcolNumber = (edgeNodes.at(edgeNodeIndex) - 1)*dofsPerNode + dofIndex;
+            //copy the relevant column
+            FloatArray column;
+            BH.copyColumn(column, BHcolNumber);
+            answer.setColumn(column, edgeBHcolNumber);
+        }
+    }
+
+}
 } // end namespace oofem

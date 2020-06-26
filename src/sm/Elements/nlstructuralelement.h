@@ -255,9 +255,7 @@ public:
      * @param ncoords The natural coordinates where the matrix shall be computed.
      * @param answer BF matrix at this point.
      */
-    void computeEdgeBHmatrixAt(FloatMatrix& answer, int edge, const FloatArray& ncoords) {
-        giveInterpolation()->boundaryEdgeEvaldNdx(answer, edge, ncoords);
-    }
+    void computeEdgeBHmatrixAt(FloatMatrix& answer, int edge, const FloatArray& ncoords); 
 
     /**
      * Computes a matrix which, multiplied by the column matrix of nodal displacements,

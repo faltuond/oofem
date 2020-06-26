@@ -270,7 +270,7 @@ public:
      * @param cellgeo Underlying cell geometry.
      * @return The determinant of the boundary transformation Jacobian.
      */
-    virtual void boundaryEdgeEvaldNdx(FloatMatrix& answer, int boundary, const FloatArray& lcoords) {
+    virtual void boundaryEdgeEvaldNdx(FloatMatrix& answer, int boundary, const FloatArray& lcoords, const FEICellGeometry &cellgeo) {
         OOFEM_ERROR("not implemented");
     }
     /**
