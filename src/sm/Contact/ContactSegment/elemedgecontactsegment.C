@@ -169,14 +169,14 @@ namespace oofem {
         return answer;
     }
 
-    void ElementEdgeContactSegment::computeNormalSlope(FloatArray & answer, Node * node, TimeStep * tStep)
+    void ElementEdgeContactSegment::computeNormalSlope(FloatMatrix & answer, Node * node, TimeStep * tStep)
     {
         IntArray closestEdge;
         giveClosestEdge(closestEdge, node, tStep);
         if ( closestEdge.giveSize() != 2 ) {
             //no closest edge means no contact
             //SIZE ????
-            answer.resize(6);
+            answer.resize(2, 6);
             return;
         }
         int edgePos = closestEdge.at(2);
@@ -185,7 +185,7 @@ namespace oofem {
         NLStructuralElement * nlelem = dynamic_cast<NLStructuralElement*> (elem);
         if ( nlelem == nullptr || nlelem->giveGeometryMode() != 1 ) {
             //there is no geometrical non-linearity
-            answer.resize(6);
+            answer.resize(2, 6);
             return;
         }
 
@@ -272,12 +272,10 @@ namespace oofem {
         normal_slope.beProductOf(bracket, Bh); //2x4
         normal_slope.times(1. / n_size);
 
-        //insert normal slope into the first 4 positions of answer
+        //insert normal slope into the first 2x4 positions of answer
         //the last 2 positions shall remain zero
-        FloatArray normal_slope_v;
-        normal_slope_v.beVectorForm(normal_slope); //HOW?? sizes dont agree
-        answer.resize(6);
-        answer.addSubVector(normal_slope_v, 1);
+        answer = normal_slope;
+        answer.resizeWithData(2, 6);
 
     }
 

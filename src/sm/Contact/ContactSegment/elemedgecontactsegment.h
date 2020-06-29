@@ -69,7 +69,7 @@ namespace oofem {
         double computePenetration(Node * node, TimeStep * tStep) override;
 
         //computes the derivative of the normalized normal vector to the degrees of freedom
-        void computeNormalSlope(FloatArray& answer, Node * node, TimeStep * tStep) override;
+        void computeNormalSlope(FloatMatrix& answer, Node * node, TimeStep * tStep) override;
 
         //the first one of those returns array of one segment, the second one of all segments
         void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;

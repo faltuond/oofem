@@ -219,11 +219,12 @@ namespace oofem {
         answer.times(this->penalty);
 
         //assembling the second part of the tangent (for large deformations)
-        FloatMatrix k2;
-        FloatArray Ns;
+        //K2 = - p*g*N^T * n_s
+        FloatMatrix k2, Ns, Next;
         segment->computeNormalSlope(Ns, node, tStep);
-        k2.beDyadicProductOf(Nv, Ns);
-        k2.times(- gap * penalty);
+        segment->computeExtendedNMatrix(Next, node, tStep);
+        k2.beTProductOf(Next, Ns);
+        k2.times(- gap * this->penalty);
         answer.add(k2);
 
         //zero in the case of no contact occuring

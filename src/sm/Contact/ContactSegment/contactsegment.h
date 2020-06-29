@@ -73,7 +73,7 @@ namespace oofem {
 
       //in the case of non-linear geometry computes the derivative of normalized normal vector
       //returns zero array otherwise
-      virtual void computeNormalSlope(FloatArray& answer, Node * node, TimeStep * tStep) = 0;
+      virtual void computeNormalSlope(FloatMatrix& answer, Node * node, TimeStep * tStep) = 0;
 
       virtual void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) = 0;
 
