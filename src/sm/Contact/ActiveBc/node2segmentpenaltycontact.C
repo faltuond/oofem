@@ -213,23 +213,30 @@ namespace oofem {
         //assembling the first part of the tangent
         //considering Nv = N^T * n/||n||
         //and         K1 = p * (Nv*Nv^T)
+		// (this part is always assembled as it is the simplest way to know the required dimensions of answer)
+		// (if there is no contact, the answer, already with the right dimensions, is later zeroed, see below)
         FloatArray Nv;
         this->computeNormalMatrixAt(Nv, node, segment, tStep);
         answer.beDyadicProductOf(Nv, Nv);
         answer.times(this->penalty);
 
-        //assembling the second part of the tangent (for large deformations)
-        //K2 = - p*g*N^T * n_s
-        FloatMatrix k2, Ns, Next;
-        segment->computeNormalSlope(Ns, node, tStep);
-        segment->computeExtendedNMatrix(Next, node, tStep);
-        k2.beTProductOf(Next, Ns);
-        k2.times(- gap * this->penalty);
-        answer.add(k2);
+        if ( gap < 0.0 ) {
+            //assembling the second part of the tangent (for large deformations)
+			//whether large deformations are to be considered or not is decided
+			//by the segment and reflected in the returned normal slope matrix
 
-        //zero in the case of no contact occuring
-        if ( gap >= 0.0 ) answer.zero();
+            //K2 = - p*g*N^T * n_s
+            FloatMatrix k2, Ns, Next;
+            segment->computeNormalSlope( Ns, node, tStep );
+            segment->computeExtendedNMatrix( Next, node, tStep );
+            k2.beTProductOf( Next, Ns );
+            k2.times( -gap * this->penalty );
+            answer.add( k2 );
 
+        } else {
+            //zero in the case of no contact occuring
+            answer.zero();
+        }
 
     }
 

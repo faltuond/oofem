@@ -62,7 +62,10 @@ namespace oofem {
 
         //if element geometry is nonlinear, normal should be converted to deformed configuration
         NLStructuralElement* nlelem = dynamic_cast<NLStructuralElement*>(elem);
-        if ( nlelem && nlelem->giveGeometryMode() == 1 ) transformNormalToDeformedShape(normal, nlelem, cPointLocal, tStep);
+        if ( nlelem && nlelem->giveGeometryMode() == 1 ){
+			transformNormalToDeformedShape(normal, nlelem, cPointLocal, tStep);
+            normal.normalize();
+		}
 
 
         //contact normal is defined as going towards the edge
@@ -230,6 +233,10 @@ namespace oofem {
         interpolation->edgeEvalNormal(n0, edgePos, lcoords, FEIElementGeometryWrapper(elem));
         n = n0;
         transformNormalToDeformedShape(n, nlelem, lcoords, tStep);
+
+        n.times( -1. );
+        n0.times( -1 );
+
         n_size = n.computeNorm();
         n_norm = n;
         n_norm.times(1. / n_size);
