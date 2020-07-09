@@ -243,12 +243,8 @@ namespace oofem {
 
         StructuralMaterial::compute_tensor_cross_product_tensor(F_cross, Fv);
         nlelem->computeEdgeBHmatrixAt(Bh, edgePos, lcoords);
-        //elem->compudeEdgeBHMatrixAt()
-        // to bude volat interpolaci
-        // v ní bude edgeEvaldNdx() viz EdgeEvalNormal a evaldNdX a 1D prvek
-        //jakobian (det J) delka hrany prvku
 
-        //TODO assemble together. Do tensor sizes agree??
+		//computing the term from the members determined above
 
         FloatMatrix nnorm_x_n0; // n_norm x n0 <--- 2nd order tensor
         nnorm_x_n0.beDyadicProductOf(n_norm, n0); //2x2

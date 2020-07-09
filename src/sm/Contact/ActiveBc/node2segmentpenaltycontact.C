@@ -233,6 +233,9 @@ namespace oofem {
             k2.times( -gap * this->penalty );
             answer.add( k2 );
 
+			/*k2.printYourself();
+            answer.printYourself();*/
+
         } else {
             //zero in the case of no contact occuring
             answer.zero();
