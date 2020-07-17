@@ -101,6 +101,8 @@ private:
 
     void computeNormalMatrixAt(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * tStep);
 
+	void computeTangentMatrixAt( FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep );
+
     void computeExternalForcesFromContact(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * tStep);
         
 };
