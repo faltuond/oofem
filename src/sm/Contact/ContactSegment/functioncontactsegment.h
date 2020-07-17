@@ -55,6 +55,8 @@ namespace oofem {
         //returns normalized n, which is an normal vector of contact
         void computeNormal(FloatArray& answer, Node * node, TimeStep* tstep) override;
 
+		void computeTangent( FloatArray &answer, Node *node, TimeStep *tstep ) override;
+
         //returns an extended N (aka A) matrix, integrated at point of contact of given node
         void computeExtendedNMatrix(FloatMatrix& answer, Node* node, TimeStep * tStep) override;
 

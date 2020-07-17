@@ -65,6 +65,9 @@ namespace oofem {
       //returns normalized n, which is an normal vector of contact
       virtual void computeNormal(FloatArray& answer, Node * node, TimeStep* tstep) = 0;
 
+	  //returns normalized t, a vector tangential to the segment (i.e. perpendicular to normal)
+	  virtual void computeTangent( FloatArray &answer, Node *node, TimeStep *tstep ) = 0;
+
       //returns an extended N (aka A) matrix, integrated at point of contact of given node
       virtual void computeExtendedNMatrix(FloatMatrix& answer, Node* node, TimeStep * tStep) = 0;
 

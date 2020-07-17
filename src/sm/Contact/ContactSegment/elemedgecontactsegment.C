@@ -87,6 +87,15 @@ namespace oofem {
         //}
     }
 
+    void ElementEdgeContactSegment::computeTangent( FloatArray &answer, Node *node, TimeStep *tstep )
+    {
+        FloatArray normal;
+        computeNormal( normal, node, tstep );
+        answer.resize( 2 ); //this is a strictly 2D segment
+        answer.at( 1 ) = normal.at( 2 );
+        answer.at( 2 ) = -normal.at( 1 );
+    }
+
     void ElementEdgeContactSegment::computeExtendedNMatrix(FloatMatrix & answer, Node * node, TimeStep * tStep)
     {
         IntArray closestEdge;

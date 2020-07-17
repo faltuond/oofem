@@ -17,6 +17,10 @@ namespace oofem {
 
     }
 
+    void QElementEdgeContactSegment::computeTangent( FloatArray &answer, Node *node, TimeStep *tstep )
+    {
+    }
+
     void QElementEdgeContactSegment::computeExtendedNMatrix(FloatMatrix & answer, Node * node, TimeStep * tStep)
     {
 

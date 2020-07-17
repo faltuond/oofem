@@ -23,6 +23,17 @@ namespace oofem {
         }*/
     }
 
+	void FunctionContactSegment::computeTangent( FloatArray &answer, Node *node, TimeStep *tstep )
+    {
+        FloatArray normal;
+        computeNormal( normal, node, tstep );
+        answer.resize( 2 ); //this is NOT a strictly 2D segment
+        /*answer.at( 1 ) = normal.at( 2 );
+        answer.at( 2 ) = -normal.at( 1 );*/
+
+		OOFEM_ERROR( "Tangent vector for function segments not implemented" );
+    }
+
     void FunctionContactSegment::computeExtendedNMatrix(FloatMatrix & answer, Node * node, TimeStep * tStep)
     {
         //returns just [[-1, 0], so that localization happens on node only
