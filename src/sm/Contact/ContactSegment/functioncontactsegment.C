@@ -45,7 +45,24 @@ namespace oofem {
         answer.times(-1.); //?? seems reasonable to maintain compatibility with other segments
     }
 
-    double FunctionContactSegment::computePenetration(Node * node, TimeStep * tStep)
+    void FunctionContactSegment::computeExtendedBMatrix( FloatMatrix &answer, Node *node, TimeStep *tStep )
+    {
+		//is only the nodal part,same as extN, which in this case is all zeros
+        int ncoords = node->giveCoordinates()->giveSize();
+        answer.resize( ncoords, ncoords );
+    }
+
+    bool FunctionContactSegment::hasNonLinearGeometry( Node *node, TimeStep *tStep )
+    {
+        return false; //placeholder??
+    }
+
+    void FunctionContactSegment::computeMetricTensor( FloatMatrix &answer, Node *node, TimeStep *tStep )
+    {
+        OOFEM_ERROR( "Not implemented for function segments" );
+    }
+
+    double FunctionContactSegment::computePenetration( Node *node, TimeStep *tStep )
     {
         //get current nodal coords
         FloatArray nodeCoords, nodeCoordsInit, contactPoint, contactPointInit, dummyNormal;
@@ -68,13 +85,6 @@ namespace oofem {
         return answer;
     }
 
-    void FunctionContactSegment::computeNormalSlope(FloatMatrix & answer, Node * node, TimeStep * tStep)
-    {
-        //the answer shall be a matrix of zeros, size 2x6 for 2D applications and 3x9 for 3D
-        int ndofs = node->giveNumberOfDofs();
-        answer.resize(ndofs, 3 * ndofs);
-        answer.zero();
-    }
 
     void FunctionContactSegment::giveLocationArray(const IntArray & dofIdArray, IntArray & s_loc, const UnknownNumberingScheme & c_s)
     {

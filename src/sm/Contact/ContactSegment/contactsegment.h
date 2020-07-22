@@ -62,21 +62,26 @@ namespace oofem {
           return FEMComponent::initializeFrom(ir);
       };
 
-      //returns normalized n, which is an normal vector of contact
+      //returns n, which is an normal vector of contact
       virtual void computeNormal(FloatArray& answer, Node * node, TimeStep* tstep) = 0;
 
-	  //returns normalized t, a vector tangential to the segment (i.e. perpendicular to normal)
+	  //returns t1 and t2, vectors tangential to the segment (i.e. perpendicular to normal)
 	  virtual void computeTangent( FloatArray &answer, Node *node, TimeStep *tstep ) = 0;
 
       //returns an extended N (aka A) matrix, integrated at point of contact of given node
       virtual void computeExtendedNMatrix(FloatMatrix& answer, Node* node, TimeStep * tStep) = 0;
 
+	  //returns a xi derivative of the extended N matrix at point of contact of given node
+      virtual void computeExtendedBMatrix(FloatMatrix &answer, Node *node, TimeStep *tStep ) = 0;
+
       //computes the penetration of node given 
       virtual double computePenetration(Node * node, TimeStep * tStep) = 0;
 
-      //in the case of non-linear geometry computes the derivative of normalized normal vector
-      //returns zero array otherwise
-      virtual void computeNormalSlope(FloatMatrix& answer, Node * node, TimeStep * tStep) = 0;
+	  //determines whether geometrical non-linearity should be considered
+      virtual bool hasNonLinearGeometry( Node *node, TimeStep *tStep ) = 0;
+
+	  //returns the metric tensor m
+      virtual void computeMetricTensor( FloatMatrix &answer, Node *node, TimeStep *tStep ) = 0;
 
       virtual void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) = 0;
 

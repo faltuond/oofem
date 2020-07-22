@@ -31,11 +31,6 @@ namespace oofem {
         return 0.0;
     }
 
-    void QElementEdgeContactSegment::computeNormalSlope(FloatMatrix & answer, Node * node, TimeStep * tStep)
-    {
-        OOFEM_ERROR("not implemented");
-    }
-
     void QElementEdgeContactSegment::giveLocationArray(const IntArray & dofIdArray, IntArray & s_loc, const UnknownNumberingScheme & c_s)
     {
 

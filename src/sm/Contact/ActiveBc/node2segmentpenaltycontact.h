@@ -99,9 +99,11 @@ private:
 
     void computeGap(double &answer, Node *node, ContactSegment *segment, TimeStep *tStep);
 
-    void computeNormalMatrixAt(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * tStep);
+    void computeNvMatrixAt(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * tStep);
 
-	void computeTangentMatrixAt( FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep );
+	void computeTvMatrixAt( FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep );
+
+	void computeBvMatrixAt( FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep );
 
     void computeExternalForcesFromContact(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * tStep);
         

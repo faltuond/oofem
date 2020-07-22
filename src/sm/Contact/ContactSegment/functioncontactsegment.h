@@ -60,10 +60,15 @@ namespace oofem {
         //returns an extended N (aka A) matrix, integrated at point of contact of given node
         void computeExtendedNMatrix(FloatMatrix& answer, Node* node, TimeStep * tStep) override;
 
+		//returns an extended N (aka A) matrix, integrated at point of contact of given node
+        void computeExtendedBMatrix( FloatMatrix &answer, Node *node, TimeStep *tStep ) override;
+
+		bool hasNonLinearGeometry( Node *node, TimeStep *tStep ) override;
+
+		void computeMetricTensor( FloatMatrix &answer, Node *node, TimeStep *tStep ) override;
+
         //computes the penetration of node given 
         double computePenetration(Node * node, TimeStep * tStep) override;
-
-        void computeNormalSlope(FloatMatrix& answer, Node * node, TimeStep * tStep) override;
 
         void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
         void giveLocationArrays(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;

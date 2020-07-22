@@ -26,74 +26,91 @@ namespace oofem {
 
     void ElementEdgeContactSegment::computeNormal(FloatArray & answer, Node * node, TimeStep* tStep)
     {
+		if (this->hasNonLinearGeometry(node, tStep)) {
+			//determine normal from tangent as t vector cross product e3
+			FloatArray tangent, tangent3D, e3, normal3D;
+			computeTangent(tangent, node, tStep);
+			tangent3D.resize(3);
+			tangent3D.addSubVector(tangent, 1);
+			e3.resize(3);
+			e3.at(3) = 1.;
+			normal3D.beVectorProductOf(tangent3D, e3);
+			answer = normal3D;
+			answer.resizeWithValues(2);
+		}
+		else {
+			//determine normal from edge
+			IntArray closestEdge;
+			giveClosestEdge(closestEdge, node, tStep);
+			if (closestEdge.giveSize() != 2) {
+				//no closest edge means no contact
+				//return zeros
+				answer.resize(2);
+				return;
+			}
+
+			StructuralElement* elem = (StructuralElement*)this->giveDomain()->giveElement(closestEdge.at(1));
+			int edgePos = closestEdge.at(2);
+
+			FloatArray cPoint, cPointLocal, normal, edgeVector, edgeNode1Coords, edgeNode2Coords, nodeCoords;
+
+			IntArray edgeNodes;
+			elem->giveBoundaryEdgeNodes(edgeNodes, edgePos);
+
+			node->giveUpdatedCoordinates(nodeCoords, tStep);
+
+			elem->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
+			elem->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
+
+			bool inbetween = computeContactPoint(cPoint, nodeCoords, edgeNode1Coords, edgeNode2Coords);
+			//no need to care here whether distance is negative or not
+
+			//retrieve edge normal from element interpolation
+			FEInterpolation2d* interpolation = dynamic_cast<FEInterpolation2d*>(elem->giveInterpolation());
+			if (interpolation == nullptr) {
+				OOFEM_ERROR("Non-2D element encountered in ElementEdgeContactSegment");
+			}
+
+			interpolation->global2local(cPointLocal, cPoint, FEIElementGeometryWrapper(elem));
+			interpolation->edgeEvalNormal(normal, edgePos, cPointLocal, FEIElementGeometryWrapper(elem));
+
+			//contact normal is defined as going towards the edge
+			//normal.times(-1.);
+			answer = normal;
+		}
+    }
+
+    void ElementEdgeContactSegment::computeTangent( FloatArray &answer, Node *node, TimeStep *tStep )
+    {
         IntArray closestEdge;
-        giveClosestEdge(closestEdge, node, tStep);
+        giveClosestEdge( closestEdge, node, tStep );
         if ( closestEdge.giveSize() != 2 ) {
             //no closest edge means no contact
             //return zeros
-            answer.resize(2);
+            answer.resize( 2 );
             return;
         }
 
-        StructuralElement* elem = (StructuralElement*)this->giveDomain()->giveElement(closestEdge.at(1));
-        int edgePos = closestEdge.at(2);
-
-        FloatArray cPoint, cPointLocal, normal, edgeVector, edgeNode1Coords, edgeNode2Coords, nodeCoords;
-
+		StructuralElement *elem = (StructuralElement *)this->giveDomain()->giveElement( closestEdge.at( 1 ) );
+        int edgePos = closestEdge.at( 2 );
         IntArray edgeNodes;
-        elem->giveBoundaryEdgeNodes(edgeNodes, edgePos);
+        elem->giveBoundaryEdgeNodes( edgeNodes, edgePos );
+        FloatArray nodalCoords;
+        FloatArray nodalCoords2;
 
-        node->giveUpdatedCoordinates(nodeCoords, tStep);
+		elem->giveNode( edgeNodes( 0 ) )->giveUpdatedCoordinates( nodalCoords, tStep );
+        elem->giveNode( edgeNodes( 1 ) )->giveUpdatedCoordinates( nodalCoords2, tStep );
 
-        elem->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
-        elem->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
+		nodalCoords.resizeWithValues( 4 ); //why does FloatArray not have followedBy()??
+        nodalCoords.at( 3 ) = nodalCoords2.at( 1 );
+        nodalCoords.at( 4 ) = nodalCoords2.at( 2 );
 
-        bool inbetween = computeContactPoint(cPoint, nodeCoords, edgeNode1Coords, edgeNode2Coords);
-        //no need to care here whether distance is negative or not
+        FloatMatrix dNextdXi;
+        computeExtendedBMatrix( dNextdXi, node, tStep );
+		dNextdXi.resizeWithData(2, 4);
 
-        //retrieve edge normal from element interpolation
-        FEInterpolation2d* interpolation = dynamic_cast<FEInterpolation2d*>(elem->giveInterpolation());
-        if ( interpolation == nullptr ) {
-            OOFEM_ERROR("Non-2D element encountered in ElementEdgeContactSegment");
-        }
-
-        interpolation->global2local(cPointLocal, cPoint, FEIElementGeometryWrapper(elem));
-        interpolation->edgeEvalNormal(normal, edgePos, cPointLocal, FEIElementGeometryWrapper(elem));
-
-        //if element geometry is nonlinear, normal should be converted to deformed configuration
-        NLStructuralElement* nlelem = dynamic_cast<NLStructuralElement*>(elem);
-        if ( nlelem && nlelem->giveGeometryMode() == 1 ){
-			transformNormalToDeformedShape(normal, nlelem, cPointLocal, tStep);
-            normal.normalize();
-		}
-
-
-        //contact normal is defined as going towards the edge
-        normal.times(-1.);
-        answer = normal;
-
-
-        //if ( true || inbetween ) { //attempt to fix concave problem
-        //    answer = normal;
-        //    //normalize according to normalization mode specified
-        //    if ( normmode != NM_Never ) {
-        //        double norm = answer.computeNorm();
-        //        if ( (normmode == NM_Always || norm > 1.0e-8) && norm != 0 ) answer.times(1. / norm);
-        //    }
-        //}
-        //else {
-        //    //todo maybe force reestablishing closest edge? instead of automatically giving up
-        //    answer.resize(2);
-        //}
-    }
-
-    void ElementEdgeContactSegment::computeTangent( FloatArray &answer, Node *node, TimeStep *tstep )
-    {
-        FloatArray normal;
-        computeNormal( normal, node, tstep );
-        answer.resize( 2 ); //this is a strictly 2D segment
-        answer.at( 1 ) = normal.at( 2 );
-        answer.at( 2 ) = -normal.at( 1 );
+		answer.beProductOf( dNextdXi, nodalCoords );
+		answer.times(-1.);
     }
 
     void ElementEdgeContactSegment::computeExtendedNMatrix(FloatMatrix & answer, Node * node, TimeStep * tStep)
@@ -139,13 +156,21 @@ namespace oofem {
         answer.setSubMatrix(extension, 1, N.giveNumberOfColumns() + 1);
     }
 
+    void ElementEdgeContactSegment::computeExtendedBMatrix( FloatMatrix &answer, Node *node, TimeStep *tStep )
+    {
+		//for linear segments, this is always the same
+		FloatMatrix answerT;
+		answerT = { {1, 0, -1,  0, 0, 0},
+				    {0, 1,  0, -1, 0, 0}};
+        answer.beTranspositionOf( answerT );
+    }
+
     double ElementEdgeContactSegment::computePenetration(Node * node, TimeStep * tStep)
     {
         IntArray closestEdge;
         giveClosestEdge(closestEdge, node, tStep);
         if ( closestEdge.giveSize() != 2 ) {
             //no closest edge means no contact
-            //OOFEM_WARNING("Penetration asked of ContactSegment despite no contact occuring, returned 0.0");
             return 0.0;
         }
 
@@ -181,114 +206,29 @@ namespace oofem {
         return answer;
     }
 
-    void ElementEdgeContactSegment::computeNormalSlope(FloatMatrix & answer, Node * node, TimeStep * tStep)
+    bool ElementEdgeContactSegment::hasNonLinearGeometry( Node *node, TimeStep *tStep )
     {
         IntArray closestEdge;
-        giveClosestEdge(closestEdge, node, tStep);
+        giveClosestEdge( closestEdge, node, tStep );
         if ( closestEdge.giveSize() != 2 ) {
             //no closest edge means no contact
-            //SIZE ????
-            answer.resize(2, 6);
-            return;
-        }
-        int edgePos = closestEdge.at(2);
-
-        StructuralElement* elem = (StructuralElement*)this->giveDomain()->giveElement(closestEdge.at(1));
-        NLStructuralElement * nlelem = dynamic_cast<NLStructuralElement*> (elem);
-        if ( nlelem == nullptr || nlelem->giveGeometryMode() != 1 ) {
-            //there is no geometrical non-linearity
-            answer.resize(2, 6);
-            return;
+            return false;
         }
 
-        FloatArray cPoint, nodeCoords, edgeNode1Coords, edgeNode2Coords;
-        IntArray edgeNodes;
-        elem->giveBoundaryEdgeNodes(edgeNodes, edgePos);
+		int edgePos = closestEdge.at( 2 );
 
-        node->giveUpdatedCoordinates(nodeCoords, tStep);
-        elem->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
-        elem->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
+        NLStructuralElement *elem = dynamic_cast<NLStructuralElement *> (this->giveDomain()->giveElement( closestEdge.at( 1 ) ));
+        return elem != nullptr && elem->giveGeometryMode() == 1;
+    }
 
-
-        bool inbetween = computeContactPoint(cPoint, nodeCoords, edgeNode1Coords, edgeNode2Coords);
-
-        //all the previous just to compute the contact point...
-
-        FloatArray lcoords;
-        elem->giveInterpolation()->global2local(lcoords, cPoint, FEIElementGeometryWrapper(elem));
-
-        //the term we are supposed to return is
-        // 1/||n|| (n_0 . (F X) + (n/||n||) x (F X) : (n/||n||) x n_0) Bh
-        //where
-        // n is the deformed normal, n_0 the original normal
-        // F is the deformation gradient at contact point
-        // Bh is the BH matrix at contact point
-        // . represents single contraction, : double contraction, x a dyadic product and X a tensor cross product
-
-        FloatArray n, n_norm, n0; // 2x1
-        FloatArray Fv; // 4x1
-        double n_size = 0.;
-        FloatMatrix Bh; // 4x8 <--- problem??
-        FloatMatrix F; //2x2
-        FloatMatrix F_cross; //4x4
-
-        nlelem->computeDeformationGradientVector(Fv, lcoords, tStep);
-
-        //retrieve edge normal from element interpolation
-        FEInterpolation2d* interpolation = dynamic_cast<FEInterpolation2d*>(elem->giveInterpolation());
-        if ( interpolation == nullptr ) {
-            OOFEM_ERROR("Non-2D element encountered in ElementEdgeContactSegment");
-        }
-        interpolation->edgeEvalNormal(n0, edgePos, lcoords, FEIElementGeometryWrapper(elem));
-        n = n0;
-        transformNormalToDeformedShape(n, nlelem, lcoords, tStep);
-
-        n.times( -1. );
-        n0.times( -1 );
-
-        n_size = n.computeNorm();
-        n_norm = n;
-        n_norm.times(1. / n_size);
-
-        StructuralMaterial::compute_tensor_cross_product_tensor(F_cross, Fv);
-        nlelem->computeEdgeBHmatrixAt(Bh, edgePos, lcoords);
-
-		//computing the term from the members determined above
-
-        FloatMatrix nnorm_x_n0; // n_norm x n0 <--- 2nd order tensor
-        nnorm_x_n0.beDyadicProductOf(n_norm, n0); //2x2
-        FloatArray nnorm_x_n0_v;
-        nnorm_x_n0_v.beVectorForm(nnorm_x_n0);//transformed to 4x1
-
-        FloatArray Fcross_times_nnorm_x_n0_v; // (F X) : (n_norm x n0) <--- 2nd order tensor
-        Fcross_times_nnorm_x_n0_v.beProductOf(F_cross, nnorm_x_n0_v); //4x1
-
-        FloatMatrix nnorm_x_Fcross_times_nnorm_x_n0; // n_norm x ((F X) : (n_norm x n0)) <--- 3rd order tensor
-        nnorm_x_Fcross_times_nnorm_x_n0.beDyadicProductOf(n_norm, Fcross_times_nnorm_x_n0_v); //2x4
-
-        FloatMatrix n0_dot_Fcross; // n0 . (F X) <--- 3rd order tensor
-        FloatMatrix n0_coeff_mat(2, 4); //matrix in the form ( (n1,  0,  0, n2)
-                                        //                     ( 0, n2, n1,  0) ) 
-        n0_coeff_mat.zero();
-        n0_coeff_mat.at(1, 1) = n0.at(1);
-        n0_coeff_mat.at(1, 4) = n0.at(2);
-        n0_coeff_mat.at(2, 2) = n0.at(2);
-        n0_coeff_mat.at(2, 3) = n0.at(1);
-        n0_dot_Fcross.beProductOf(n0_coeff_mat, F_cross); //2x4
-
-        FloatMatrix bracket; //(n_0 . (F X) + (n/||n || ) x(F X) : (n/||n || ) x n_0)
-        bracket = n0_dot_Fcross;
-        bracket.add(nnorm_x_Fcross_times_nnorm_x_n0); //2x4
-
-        FloatMatrix normal_slope;
-        normal_slope.beProductOf(bracket, Bh); //2x4
-        normal_slope.times(1. / n_size);
-
-        //insert normal slope into the first 2x4 positions of answer
-        //the last 2 positions shall remain zero
-        answer = normal_slope;
-        answer.resizeWithData(2, 6);
-
+    void ElementEdgeContactSegment::computeMetricTensor( FloatMatrix &answer, Node *node, TimeStep *tStep )
+    {
+        answer.resize( 1, 1 );
+        //the answer is length of segment, which is in fact the size of tangent, squared
+		FloatArray tangent;
+        computeTangent( tangent, node, tStep );
+		double l = tangent.computeNorm();
+        answer.at( 1, 1 ) = l * l;
     }
 
     void ElementEdgeContactSegment::giveLocationArray(const IntArray & dofIdArray, IntArray & answer, const UnknownNumberingScheme & c_s)
