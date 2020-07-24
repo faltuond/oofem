@@ -195,13 +195,20 @@ namespace oofem {
         projection.beDifferenceOf(cPoint, nodeCoords);
         projectionInit.beDifferenceOf(cPointInit, nodeCoordsInit);
 
-        //test whether initial and current vector are on different sides of line
-        //find whether their cosine is larger than zero
-        double cos = projection.dotProduct(projectionInit);
-        bool penetrated = cos <= 0;
+        ////test whether initial and current vector are on different sides of line
+        ////find whether their cosine is larger than zero
+        //double cos = projection.dotProduct(projectionInit);
+        //bool penetrated = cos <= 0;
 
-        double answer = projection.computeNorm();
-        if ( penetrated ) answer *= -1;
+        //double answer = projection.computeNorm();
+        //if ( penetrated ) answer *= -1;
+
+		//new approach
+		FloatArray normal;
+		computeNormal(normal, node, tStep);
+
+		projection.times(-1.);
+		double answer = projection.dotProduct(normal);
 
         return answer;
     }
@@ -263,18 +270,18 @@ namespace oofem {
         }
     }
 
-    void ElementEdgeContactSegment::transformNormalToDeformedShape(FloatArray& normal, NLStructuralElement * elem, const FloatArray& lcoords, TimeStep* tStep)
-    {
-        FloatArray F;
-        elem->computeDeformationGradientVector(F, lcoords, tStep);
-        //compute cofactor and multiply by normal
+    //void ElementEdgeContactSegment::transformNormalToDeformedShape(FloatArray& normal, NLStructuralElement * elem, const FloatArray& lcoords, TimeStep* tStep)
+    //{
+    //    FloatArray F;
+    //    elem->computeDeformationGradientVector(F, lcoords, tStep);
+    //    //compute cofactor and multiply by normal
 
-        FloatMatrix cofactor;
-        StructuralMaterial::compute_2order_tensor_cross_product(cofactor, F, F);
-        cofactor.times(0.5);
+    //    FloatMatrix cofactor;
+    //    StructuralMaterial::compute_2order_tensor_cross_product(cofactor, F, F);
+    //    cofactor.times(0.5);
 
-        normal.beProductOf(cofactor, normal);
-    }
+    //    normal.beProductOf(cofactor, normal);
+    //}
 
     void ElementEdgeContactSegment::giveClosestEdge(IntArray & answer, Node * node, TimeStep * tStep)
     {
