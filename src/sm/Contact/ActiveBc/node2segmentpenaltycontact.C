@@ -41,9 +41,145 @@
 #include "unknownnumberingscheme.h"
 #include "sparsemtrx.h"
 #include "classfactory.h"
+#include "mathfem.h"
 
 namespace oofem {
 REGISTER_BoundaryCondition( Node2SegmentPenaltyContact );
+
+
+
+void Node2SegmentPenaltyContact::computeTangentFromContact( FloatMatrix &answer, Node *node, ContactSegment *segment, TimeStep *tStep )
+{
+    double gap;
+    this->computeGap( gap, node, segment, tStep );
+
+    //assembling the first part of the tangent
+    //considering Nv = N^T * n/||n||
+    //and         K1 = p * (Nv*Nv^T)
+    // (this part is always assembled as it is the simplest way to know the required dimensions of answer)
+    // (if there is no contact, the answer, already with the right dimensions, is later zeroed, see below)
+    FloatArray Nv;
+    this->computeNvMatrixAt( Nv, node, segment, tStep );
+    answer.beDyadicProductOf( Nv, Nv );
+    answer.times( this->penalty );
+
+    if ( gap < 0.0 && segment->hasNonLinearGeometry(node, tStep)) {
+        //assembling the rest of the tangent (for large deformations)
+
+        //K2 = - p g/l (BvTv + TvBv + g/l BvBv)
+        FloatMatrix k2, k3, k4;
+        FloatArray Bv, Tv;
+        double l;
+
+        this->computeBvMatrixAt( Bv, node, segment, tStep );
+        this->computeTvMatrixAt( Tv, node, segment, tStep );
+
+	FloatMatrix m;
+        segment->computeMetricTensor( m, node, tStep );
+	//placeholder for 2D only
+	l = sqrt( m.at( 1, 1 ) );
+
+
+	k2.beDyadicProductOf( Bv, Tv );
+        k2.times( -penalty * gap  / l );
+	
+	k3.beDyadicProductOf( Tv, Bv );
+        k3.times( -penalty * gap / l );
+	
+	k4.beDyadicProductOf( Bv, Bv );
+        k4.times( -penalty * gap * gap / (l*l) );
+
+	answer.add( k2 );
+        answer.add( k3 );
+        answer.add( k4 );
+	
+	
+
+    }
+    if (gap >= 0.0){
+      //zero in the case of no contact occuring
+        answer.zero();
+    }
+}
+
+
+void Node2SegmentPenaltyContact::computeExternalForcesFromContact( FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep )
+{
+    double gap;
+    this->computeGap( gap, node, segment, tStep );
+    this->computeNvMatrixAt( answer, node, segment, tStep );
+    if ( gap < 0.0 ) {
+        answer.times( -penalty * gap );
+    } else {
+        answer.times( 0 );
+    }
+}
+
+
+void Node2SegmentPenaltyContact::computeGap( double &answer, Node *node, ContactSegment *segment, TimeStep *tStep )
+{
+    answer = segment->computePenetration( node, tStep );
+}
+
+
+void Node2SegmentPenaltyContact::computeNvMatrixAt( FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep )
+{
+
+    FloatArray normal;
+    FloatMatrix extendedN;
+
+    if ( prescribedNormal.giveSize() == node->giveNumberOfDofs() ) {
+        normal = prescribedNormal;
+    } else {
+        segment->computeNormal( normal, node, tStep );
+    }
+    int norm = normal.computeNorm();
+    if(norm) {
+      normal.normalize();
+    }
+
+    segment->computeExtendedNMatrix( extendedN, node, tStep );
+
+    //Nv should be given just as N^t * n;
+    answer.beTProductOf( extendedN, normal );
+}
+
+void Node2SegmentPenaltyContact::computeTvMatrixAt( FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep )
+{
+    FloatArray tangent;
+    FloatMatrix extendedN;
+
+    if ( prescribedNormal.giveSize() == node->giveNumberOfDofs() ) {
+        OOFEM_WARNING( "Prescribed normal inapplicable for use with large strains" );
+    }
+    segment->computeTangent( tangent, node, tStep );
+    tangent.normalize();
+    segment->computeExtendedNMatrix( extendedN, node, tStep );
+
+    //Tv should be given just as N^t * t;
+    answer.beTProductOf( extendedN, tangent );
+}
+
+void Node2SegmentPenaltyContact::computeBvMatrixAt( FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep )
+{
+    FloatArray normal;
+    FloatMatrix extendedB;
+
+    if ( prescribedNormal.giveSize() == node->giveNumberOfDofs() ) {
+        normal = prescribedNormal;
+    } else {
+        segment->computeNormal( normal, node, tStep );
+    }
+    normal.normalize();
+
+    segment->computeExtendedBMatrix( extendedB, node, tStep );
+
+
+    //Bv should be given just as B^t * n;
+    answer.beTProductOf( extendedB, normal );
+}
+
+
 
 
 IRResultType Node2SegmentPenaltyContact::initializeFrom( InputRecord *ir )
@@ -80,18 +216,13 @@ void Node2SegmentPenaltyContact::assemble( SparseMtrx &answer, TimeStep *tStep,
 
             Node *node              = this->giveDomain()->giveNode( nodeSet.at( nodePos ) );
             ContactSegment *segment = ( this->giveDomain()->giveContactSegment( segmentSet.at( segmentPos ) ) );
-
             this->computeTangentFromContact( K, node, segment, tStep );
-
-            //assembling for both node and segment
-            node->giveLocationArray( dofIdArray, node_loc, r_s );
-            segment->giveLocationArray( dofIdArray, loc, r_s );
-            loc.followedBy( node_loc );
-
+	    this->giveLocationArray(loc, r_s, node, segment);
             answer.assemble( loc, K );
         }
     }
 }
+
 
 void Node2SegmentPenaltyContact::assembleVector( FloatArray &answer, TimeStep *tStep,
     CharType type, ValueModeType mode,
@@ -101,27 +232,38 @@ void Node2SegmentPenaltyContact::assembleVector( FloatArray &answer, TimeStep *t
         return;
     }
 
-    IntArray dofIdArray = giveDomain()->giveDefaultNodeDofIDArry();
 
-    IntArray loc, node_loc;
+    IntArray loc;
     FloatArray fext;
 
     for ( int nodePos = 1; nodePos <= nodeSet.giveSize(); ++nodePos ) {
         for ( int segmentPos = 1; segmentPos <= segmentSet.giveSize(); segmentPos++ ) {
             Node *node              = this->giveDomain()->giveNode( nodeSet.at( nodePos ) );
             ContactSegment *segment = ( this->giveDomain()->giveContactSegment( segmentSet.at( segmentPos ) ) );
-
             this->computeExternalForcesFromContact( fext, node, segment, tStep );
-
-            //assembling for both node and segment
-            node->giveLocationArray( dofIdArray, node_loc, s );
-            segment->giveLocationArray( dofIdArray, loc, s );
-            loc.followedBy( node_loc );
-
+	    this->giveLocationArray(loc, s, node, segment);
             answer.assemble( fext, loc );
         }
     }
 }
+
+void Node2SegmentPenaltyContact:: giveLocationArray(IntArray &loc, const UnknownNumberingScheme &ns, const Node *node, const ContactSegment *segment)
+{
+  IntArray seg_loc;
+  IntArray dofIdArray = giveDomain()->giveDefaultNodeDofIDArry();
+  //assembling for both node and segment
+  node->giveLocationArray( dofIdArray, loc, ns );
+  segment->giveLocationArray( dofIdArray, seg_loc, ns);
+  loc.followedBy( seg_loc );
+}
+
+  
+
+
+
+
+
+
 
 void Node2SegmentPenaltyContact::giveLocationArrays( std::vector<IntArray> &rows, std::vector<IntArray> &cols, CharType type, const UnknownNumberingScheme &r_s, const UnknownNumberingScheme &c_s )
 {
@@ -155,135 +297,6 @@ void Node2SegmentPenaltyContact::giveLocationArrays( std::vector<IntArray> &rows
     }
 }
 
-
-void Node2SegmentPenaltyContact::computeGap( double &answer, Node *node, ContactSegment *segment, TimeStep *tStep )
-{
-    answer = segment->computePenetration( node, tStep );
-}
-
-
-void Node2SegmentPenaltyContact::computeNvMatrixAt( FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep )
-{
-
-    FloatArray normal;
-    FloatMatrix extendedN;
-
-    if ( prescribedNormal.giveSize() == node->giveNumberOfDofs() ) {
-        normal = prescribedNormal;
-    } else {
-        segment->computeNormal( normal, node, tStep );
-    }
-    normal.normalize();
-
-    segment->computeExtendedNMatrix( extendedN, node, tStep );
-
-    //Nv should be given just as N^t * n;
-    answer.beTProductOf( extendedN, normal );
-}
-
-void Node2SegmentPenaltyContact::computeTvMatrixAt( FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep )
-{
-    FloatArray tangent;
-    FloatMatrix extendedN;
-
-    if ( prescribedNormal.giveSize() == node->giveNumberOfDofs() ) {
-        OOFEM_WARNING( "Prescribed normal inapplicable for use with large strains" );
-    }
-    segment->computeTangent( tangent, node, tStep );
-
-    segment->computeExtendedNMatrix( extendedN, node, tStep );
-
-    //Tv should be given just as N^t * t;
-    answer.beTProductOf( extendedN, tangent );
-}
-
-void Node2SegmentPenaltyContact::computeBvMatrixAt( FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep )
-{
-    FloatArray normal;
-    FloatMatrix extendedB;
-
-    if ( prescribedNormal.giveSize() == node->giveNumberOfDofs() ) {
-        normal = prescribedNormal;
-    } else {
-        segment->computeNormal( normal, node, tStep );
-    }
-    normal.normalize();
-
-    segment->computeExtendedBMatrix( extendedB, node, tStep );
-
-    //Bv should be given just as B^t * n;
-    answer.beTProductOf( extendedB, normal );
-}
-
-
-void Node2SegmentPenaltyContact::computeTangentFromContact( FloatMatrix &answer, Node *node, ContactSegment *segment, TimeStep *tStep )
-{
-    double gap;
-    this->computeGap( gap, node, segment, tStep );
-
-    //assembling the first part of the tangent
-    //considering Nv = N^T * n/||n||
-    //and         K1 = p * (Nv*Nv^T)
-    // (this part is always assembled as it is the simplest way to know the required dimensions of answer)
-    // (if there is no contact, the answer, already with the right dimensions, is later zeroed, see below)
-    FloatArray Nv;
-    this->computeNvMatrixAt( Nv, node, segment, tStep );
-    answer.beDyadicProductOf( Nv, Nv );
-    answer.times( this->penalty );
-
-    if ( gap < 0.0 && segment->hasNonLinearGeometry(node, tStep)) {
-        //assembling the rest of the tangent (for large deformations)
-
-        //K2 = - p g/l (BvTv + TvBv + g/l BvBv)
-        FloatMatrix k2, k3, k4;
-        FloatArray Bv, Tv;
-        double l;
-
-        computeBvMatrixAt( Bv, node, segment, tStep );
-        computeTvMatrixAt( Tv, node, segment, tStep );
-
-		FloatMatrix m;
-        segment->computeMetricTensor( m, node, tStep );
-		//placeholder for 2D only
-		l = sqrt( m.at( 1, 1 ) );
-
-		k2.beDyadicProductOf( Bv, Tv );
-        k2.times( -penalty * gap  / l );
-
-		k3.beDyadicProductOf( Tv, Bv );
-        k3.times( -penalty * gap / l );
-
-		k4.beDyadicProductOf( Bv, Bv );
-        k4.times( -penalty * gap * gap / (l*l) );
-
-		answer.printYourself();
-		k2.printYourself();
-		k3.printYourself();
-		k4.printYourself();
-
-
-		answer.add( k2 );
-        answer.add( k3 );
-        answer.add( k4 );
-    }
-    if (gap >= 0.0){
-        //zero in the case of no contact occuring
-        answer.zero();
-    }
-}
-
-
-void Node2SegmentPenaltyContact::computeExternalForcesFromContact( FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep )
-{
-    double gap;
-    this->computeGap( gap, node, segment, tStep );
-    this->computeNvMatrixAt( answer, node, segment, tStep );
-    if ( gap < 0.0 ) {
-        answer.times( penalty * gap );
-    } else {
-        answer.times( 0 );
-    }
-}
-
+  
 
 } // namespace oofem

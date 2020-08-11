@@ -64,7 +64,7 @@ namespace oofem {
 
       //returns n, which is an normal vector of contact
       virtual void computeNormal(FloatArray& answer, Node * node, TimeStep* tstep) = 0;
-
+      
 	  //returns t1 and t2, vectors tangential to the segment (i.e. perpendicular to normal)
 	  virtual void computeTangent( FloatArray &answer, Node *node, TimeStep *tstep ) = 0;
 
@@ -83,7 +83,7 @@ namespace oofem {
 	  //returns the metric tensor m
       virtual void computeMetricTensor( FloatMatrix &answer, Node *node, TimeStep *tStep ) = 0;
 
-      virtual void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) = 0;
+      virtual void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) const  = 0;
 
       virtual void giveLocationArrays(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) = 0;
 
@@ -93,7 +93,7 @@ namespace oofem {
 
     protected:
 
-        typedef enum NormalizationMode { NM_Never = 0, NM_IfNotSmall = 1, NM_Always = 2 };
+        enum NormalizationMode { NM_Never = 0, NM_IfNotSmall = 1, NM_Always = 2 };
         NormalizationMode normmode;
     };
 }

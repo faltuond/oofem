@@ -115,6 +115,28 @@ public:
 
 
 /**
+ * Wrapper around element definition to provide deformed FEICellGeometry interface.
+ */
+class OOFEM_EXPORT FEIElementDeformedGeometryWrapper : public FEICellGeometry
+{
+protected:
+    const Element *elem;
+    mutable FloatArray actualCoords;
+    TimeStep *tStep;
+    double alpha;
+
+public:
+    FEIElementDeformedGeometryWrapper(const Element * elem);
+    FEIElementDeformedGeometryWrapper(const Element * elem, TimeStep *tStep);
+    virtual ~FEIElementDeformedGeometryWrapper() { }
+    int giveNumberOfVertices() const;
+    const FloatArray &giveVertexCoordinates(int i) const;
+    void setTimeStep(TimeStep *ts){tStep = ts;}
+    void setAlpha(double alpha){this->alpha = alpha;}
+
+  };
+ 
+/**
  * Wrapper around cell with vertex coordinates stored in FloatArray**.
  */
 class OOFEM_EXPORT FEIVertexListGeometryWrapper : public FEICellGeometry

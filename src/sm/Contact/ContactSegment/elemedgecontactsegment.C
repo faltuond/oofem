@@ -7,14 +7,14 @@ namespace oofem {
     REGISTER_ContactSegment(ElementEdgeContactSegment);
 
 
-    IRResultType ElementEdgeContactSegment::initializeFrom(InputRecord * ir)
-    {
-        IRResultType result;
-        //IR_GIVE_FIELD(ir, this->elemSet, _IFT_ElementEdgeContactSegment_elemSet);
-        IR_GIVE_FIELD(ir, setnum, _IFT_ElementEdgeContactSegment_edgeSet);
-
-        updateMode = UM_EachStep;
-        int updateModeInt = 0;
+  IRResultType ElementEdgeContactSegment::initializeFrom(InputRecord * ir)
+  {
+    IRResultType result;
+    //IR_GIVE_FIELD(ir, this->elemSet, _IFT_ElementEdgeContactSegment_elemSet);
+    IR_GIVE_FIELD(ir, setnum, _IFT_ElementEdgeContactSegment_edgeSet);
+    
+    updateMode = UM_EachStep;
+    int updateModeInt = 0;
         IR_GIVE_OPTIONAL_FIELD(ir, updateModeInt, _IFT_ElementEdgeContactSegment_pairUpdateMode);
         if ( result == IRRT_OK ) {
             updateMode = (UpdateMode)updateModeInt;
@@ -34,8 +34,9 @@ namespace oofem {
 			tangent3D.addSubVector(tangent, 1);
 			e3.resize(3);
 			e3.at(3) = 1.;
-			normal3D.beVectorProductOf(tangent3D, e3);
+			normal3D.beVectorProductOf(e3, tangent3D);
 			answer = normal3D;
+			answer.times(1./normal3D.computeNorm());
 			answer.resizeWithValues(2);
 		}
 		else {
@@ -62,7 +63,7 @@ namespace oofem {
 			elem->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
 			elem->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
 
-			bool inbetween = computeContactPoint(cPoint, nodeCoords, edgeNode1Coords, edgeNode2Coords);
+			bool inbetween = computeContactPoint(cPointLocal, nodeCoords, edgeNode1Coords, edgeNode2Coords);
 			//no need to care here whether distance is negative or not
 
 			//retrieve edge normal from element interpolation
@@ -70,12 +71,8 @@ namespace oofem {
 			if (interpolation == nullptr) {
 				OOFEM_ERROR("Non-2D element encountered in ElementEdgeContactSegment");
 			}
-
-			interpolation->global2local(cPointLocal, cPoint, FEIElementGeometryWrapper(elem));
 			interpolation->edgeEvalNormal(normal, edgePos, cPointLocal, FEIElementGeometryWrapper(elem));
 
-			//contact normal is defined as going towards the edge
-			//normal.times(-1.);
 			answer = normal;
 		}
     }
@@ -98,19 +95,13 @@ namespace oofem {
         FloatArray nodalCoords;
         FloatArray nodalCoords2;
 
-		elem->giveNode( edgeNodes( 0 ) )->giveUpdatedCoordinates( nodalCoords, tStep );
+	elem->giveNode( edgeNodes( 0 ) )->giveUpdatedCoordinates( nodalCoords, tStep );
         elem->giveNode( edgeNodes( 1 ) )->giveUpdatedCoordinates( nodalCoords2, tStep );
 
-		nodalCoords.resizeWithValues( 4 ); //why does FloatArray not have followedBy()??
-        nodalCoords.at( 3 ) = nodalCoords2.at( 1 );
-        nodalCoords.at( 4 ) = nodalCoords2.at( 2 );
-
-        FloatMatrix dNextdXi;
-        computeExtendedBMatrix( dNextdXi, node, tStep );
-		dNextdXi.resizeWithData(2, 4);
-
-		answer.beProductOf( dNextdXi, nodalCoords );
-		answer.times(-1.);
+	nodalCoords.append(nodalCoords2);
+        FloatMatrix dNdXi;
+        computedNdksi( dNdXi, node, tStep );
+	answer.beProductOf( dNdXi, nodalCoords );
     }
 
     void ElementEdgeContactSegment::computeExtendedNMatrix(FloatMatrix & answer, Node * node, TimeStep * tStep)
@@ -128,42 +119,43 @@ namespace oofem {
         int edgePos = closestEdge.at(2);
 
         FloatMatrix N;
-        FloatArray cPoint, nodeCoords, edgeNode1Coords, edgeNode2Coords;
+        FloatArray cPointLocal, nodeCoords, edgeNode1Coords, edgeNode2Coords;
         IntArray edgeNodes;
         elem->giveBoundaryEdgeNodes(edgeNodes, edgePos);
 
         node->giveUpdatedCoordinates(nodeCoords, tStep);
         elem->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
-	    elem->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
-
-
-        bool inbetween = computeContactPoint(cPoint, nodeCoords, edgeNode1Coords, edgeNode2Coords);
-
+	elem->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
+        bool inbetween = computeContactPoint(cPointLocal, nodeCoords, edgeNode1Coords, edgeNode2Coords);
         //all the previous just to compute the contact point...
-
-        FloatArray lcoords;
-        elem->giveInterpolation()->global2local(lcoords, cPoint, FEIElementGeometryWrapper(elem));
-        elem->computeEdgeNMatrix(N, edgePos, lcoords);
-
+        elem->computeEdgeNMatrix(N, edgePos, cPointLocal);
         answer.resize(N.giveNumberOfRows(), N.giveNumberOfColumns() + 2);
         answer.zero();
 
         FloatMatrix extension(2, 2);
         extension.beUnitMatrix();
-        extension.times(-1.);
 
-        answer.setSubMatrix(N, 1, 1);
-        answer.setSubMatrix(extension, 1, N.giveNumberOfColumns() + 1);
+	N.times(-1);
+        answer.setSubMatrix(extension, 1, 1);
+        answer.setSubMatrix(N, 1, 3);
+
+	
     }
 
     void ElementEdgeContactSegment::computeExtendedBMatrix( FloatMatrix &answer, Node *node, TimeStep *tStep )
     {
-		//for linear segments, this is always the same
-		FloatMatrix answerT;
-		answerT = { {1, 0, -1,  0, 0, 0},
-				    {0, 1,  0, -1, 0, 0}};
-        answer.beTranspositionOf( answerT );
+      //for linear segments, this is always the same
+      answer = {{0,0},{0,0}, {-0.5, 0},{0, -0.5},{0.5,0},{0,0.5}};
+      answer.times(2);
     }
+
+    void ElementEdgeContactSegment::computedNdksi( FloatMatrix &answer, Node *node, TimeStep *tStep )
+    {
+      //for linear segments, this is always the same
+      answer = {{-0.5, 0},{0, -0.5},{0.5,0},{0,0.5}};
+      answer.times(2);
+    }
+  
 
     double ElementEdgeContactSegment::computePenetration(Node * node, TimeStep * tStep)
     {
@@ -174,43 +166,29 @@ namespace oofem {
             return 0.0;
         }
 
-        FloatArray cPoint, projection, edgeNode1Coords, edgeNode2Coords, nodeCoords;
-        FloatArray cPointInit, projectionInit, edgeNode1CoordsInit, edgeNode2CoordsInit, nodeCoordsInit;
+        FloatArray cPointLocal, projection, edgeNode1Coords, edgeNode2Coords, nodeCoords;
         IntArray edgeNodes;
 
         node->giveUpdatedCoordinates(nodeCoords, tStep);
-        nodeCoordsInit = node->giveNodeCoordinates();
+
 
         StructuralElement* element = (StructuralElement*)this->giveDomain()->giveElement(closestEdge.at(1));
         element->giveBoundaryEdgeNodes(edgeNodes, closestEdge.at(2));
 
         element->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
-	    element->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
-	
-        edgeNode1CoordsInit = element->giveNode(edgeNodes(0))->giveNodeCoordinates();
-	    edgeNode2CoordsInit = element->giveNode(edgeNodes(1))->giveNodeCoordinates();
+	element->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);	
 
-        bool inbetween = computeContactPoint(cPoint, nodeCoords, edgeNode1Coords, edgeNode2Coords);
-        bool inbetweenInit = computeContactPoint(cPointInit, nodeCoordsInit, edgeNode1CoordsInit, edgeNode2CoordsInit);
-        projection.beDifferenceOf(cPoint, nodeCoords);
-        projectionInit.beDifferenceOf(cPointInit, nodeCoordsInit);
+        bool inbetween = computeContactPoint(cPointLocal, nodeCoords, edgeNode1Coords, edgeNode2Coords);
+	if(inbetween == false) {
+	  return 0;
+	}
+        //projection.beDifferenceOf(nodeCoords, cPoint);
+	projection.beDifferenceOf(nodeCoords, edgeNode1Coords);
 
         ////test whether initial and current vector are on different sides of line
-        ////find whether their cosine is larger than zero
-        //double cos = projection.dotProduct(projectionInit);
-        //bool penetrated = cos <= 0;
-
-        //double answer = projection.computeNorm();
-        //if ( penetrated ) answer *= -1;
-
-		//new approach
-		FloatArray normal;
-		computeNormal(normal, node, tStep);
-
-		projection.times(-1.);
-		double answer = projection.dotProduct(normal);
-
-        return answer;
+	FloatArray normal;
+	this->computeNormal(normal, node, tStep);
+	return projection.dotProduct(normal);
     }
 
     bool ElementEdgeContactSegment::hasNonLinearGeometry( Node *node, TimeStep *tStep )
@@ -221,9 +199,6 @@ namespace oofem {
             //no closest edge means no contact
             return false;
         }
-
-		int edgePos = closestEdge.at( 2 );
-
         NLStructuralElement *elem = dynamic_cast<NLStructuralElement *> (this->giveDomain()->giveElement( closestEdge.at( 1 ) ));
         return elem != nullptr && elem->giveGeometryMode() == 1;
     }
@@ -232,13 +207,13 @@ namespace oofem {
     {
         answer.resize( 1, 1 );
         //the answer is length of segment, which is in fact the size of tangent, squared
-		FloatArray tangent;
+	FloatArray tangent;
         computeTangent( tangent, node, tStep );
-		double l = tangent.computeNorm();
+	double l = tangent.computeNorm();
         answer.at( 1, 1 ) = l * l;
     }
 
-    void ElementEdgeContactSegment::giveLocationArray(const IntArray & dofIdArray, IntArray & answer, const UnknownNumberingScheme & c_s)
+    void ElementEdgeContactSegment::giveLocationArray(const IntArray & dofIdArray, IntArray & answer, const UnknownNumberingScheme & c_s) const
     {
         if ( lastEdge.giveSize() == 2 ) {
             StructuralElement* element = (StructuralElement*)this->giveDomain()->giveElement(lastEdge.at(1));
@@ -270,18 +245,6 @@ namespace oofem {
         }
     }
 
-    //void ElementEdgeContactSegment::transformNormalToDeformedShape(FloatArray& normal, NLStructuralElement * elem, const FloatArray& lcoords, TimeStep* tStep)
-    //{
-    //    FloatArray F;
-    //    elem->computeDeformationGradientVector(F, lcoords, tStep);
-    //    //compute cofactor and multiply by normal
-
-    //    FloatMatrix cofactor;
-    //    StructuralMaterial::compute_2order_tensor_cross_product(cofactor, F, F);
-    //    cofactor.times(0.5);
-
-    //    normal.beProductOf(cofactor, normal);
-    //}
 
     void ElementEdgeContactSegment::giveClosestEdge(IntArray & answer, Node * node, TimeStep * tStep)
     {
@@ -294,7 +257,7 @@ namespace oofem {
         //if previous if failed, it means that we don't know the closest edge to this node yet
         answer.resize(2);
 
-        FloatArray cPoint, projection, edgeNode1Coords, edgeNode2Coords, nodeCoords;
+        FloatArray cPoint, cPointLocal, projection, edgeNode1Coords, edgeNode2Coords, nodeCoords;
         IntArray edgeNodes;
         double answerSize = -1.;
 
@@ -307,16 +270,21 @@ namespace oofem {
 
             element->giveBoundaryEdgeNodes(edgeNodes, edges(edgePos));
 
-	        element->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
-	        element->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
+	    element->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
+	    element->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
 
 
-            bool inbetween = computeContactPoint(cPoint, nodeCoords, edgeNode1Coords, edgeNode2Coords);
+            bool inbetween = computeContactPoint(cPointLocal, nodeCoords, edgeNode1Coords, edgeNode2Coords);
+	    FEInterpolation2d* interpolation = dynamic_cast<FEInterpolation2d*>(element->giveInterpolation());
+	    interpolation->boundaryEdgeLocal2Global(cPoint, edges(edgePos),  cPointLocal, FEIElementDeformedGeometryWrapper(element, tStep));
+	    
             projection.beDifferenceOf(cPoint, nodeCoords);
 
             if ( inbetween ) {
                 double normalSize = projection.computeNorm();
-                if ( answerSize == -1. || normalSize < answerSize ) {
+		//@todo: solve this issue
+		if ( answerSize == -1. || normalSize < answerSize ) {
+		//if ( answerSize == -1. || fabs(normalSize) < answerSize ) {
                     //new minimum found, update answer
                     answerSize = normalSize;
                     answer(0) = edges(pos * 2);
@@ -334,43 +302,20 @@ namespace oofem {
         lastEdge = answer;
     }
 
-    bool ElementEdgeContactSegment::computeContactPoint(FloatArray & answer, const FloatArray & externalPoint, const FloatArray & linePoint1, const FloatArray & linePoint2)
-    {
-
-        //convert edgevector to an equation
-        FloatArray lineVector;
-        lineVector.beDifferenceOf(linePoint2, linePoint1);
-
-        //if we consider the normal line in the form ax + by + c = 0, an and bn are components of lineVector
-        //(which is normal to normal line)
-        double an = lineVector.at(1);
-        double bn = lineVector.at(2);
-        //c has to be found using the external point coordinates
-        double cn = -an * externalPoint.at(1) - bn * externalPoint.at(2);
-
-        //now create an vector that is parallel to the normal (i.e. perpendicular to the edge line)
-        FloatArray normalVector(2);
-        normalVector.at(1) = -lineVector.at(2);
-        normalVector.at(2) = lineVector.at(1);
-
-        //thus we have equation of the edge line
-        double ae = normalVector.at(1);
-        double be = normalVector.at(2);
-        double ce = -ae * linePoint1.at(1) - be * linePoint1.at(2);
-
-        //now we have to find the intersecting point
-        double divider = ae * bn - an * be;//should only be zero if lines are parallel
-        //FloatArray contactPoint(2);
-        answer.resize(2);
-        answer.at(1) = -(ce*bn - cn * be) / divider;
-        answer.at(2) = -(ae*cn - an * ce) / divider;
-
-        //answer.beDifferenceOf(contactPoint, externalPoint);
-        //now the contact point is the answer rather than the projection
-
-        double lineLength = abs(linePoint1(0) - linePoint2(0));
-        //point lies inbetween line points if it is closer to both than length of line
-        return abs(answer(0) - linePoint1(0)) <= lineLength && abs(answer(0) - linePoint2(0)) <= lineLength;
+  bool ElementEdgeContactSegment::computeContactPoint(FloatArray &ksi, const FloatArray & externalPoint, const FloatArray & linePoint1, const FloatArray & linePoint2)
+  {
+      //@todo: general function for the closest point projection should be introduced in a parent class
+      ksi.resize(1);
+      FloatArray tangent;
+      tangent.beDifferenceOf(linePoint2, linePoint1);
+      double l = tangent.computeNorm();;
+      tangent.times(1./l);
+      //compute vector x_s - x_1
+      FloatArray v_s1;
+      v_s1.beDifferenceOf(externalPoint, linePoint1);
+      // compute parametric coord of the contact point by projection of x_s-x_1 onto tangent and divide by l (in interval -1 1)
+      ksi.at(1) = 2. * tangent.dotProduct(v_s1) / l - 1.;
+      return (ksi.at(1) <= 1 && ksi.at(1) >= -1);
     }
 
     void ElementEdgeContactSegment::updateYourself(TimeStep *tStep)

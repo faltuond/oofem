@@ -96,17 +96,14 @@ public:
 
 private:
     void  computeTangentFromContact(FloatMatrix & answer, Node * node, ContactSegment * segment, TimeStep * tStep);
-
     void computeGap(double &answer, Node *node, ContactSegment *segment, TimeStep *tStep);
-
-    void computeNvMatrixAt(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * tStep);
-
-	void computeTvMatrixAt( FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep );
-
-	void computeBvMatrixAt( FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep );
-
     void computeExternalForcesFromContact(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * tStep);
-        
+    void giveLocationArray(IntArray &loc, const UnknownNumberingScheme &ns, const Node *node, const ContactSegment *segment);
+    void computeNvMatrixAt(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * tStep);
+    void computeTvMatrixAt( FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep );
+    void computeBvMatrixAt( FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep );
+
+    
 };
 } // end namespace oofem
 #endif // node2nodecontact_h

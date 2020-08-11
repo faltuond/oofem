@@ -51,72 +51,67 @@
  //#define _IFT_ElementEdgeContactSegment_elemSet "elemset"
 
 namespace oofem {
+  //@todo: change name to something like Linear2dElementEdgeContactSegment, or ElementEdgeContactSegment_2dLinear, ... ?
     class ElementEdgeContactSegment : public ContactSegment
     {
     public:
-        ElementEdgeContactSegment(int n, Domain *aDomain) : ContactSegment(n, aDomain) { ; }
-        ~ElementEdgeContactSegment() {};
-
-        IRResultType initializeFrom(InputRecord * ir);
-
-        //returns normalized n, which is an normal vector of contact
-        void computeNormal(FloatArray& answer, Node * node, TimeStep* tstep) override;
-
-		void computeTangent( FloatArray &answer, Node *node, TimeStep *tstep ) override;
-
-        //returns an extended N (aka A) matrix, integrated at point of contact of given node
-        void computeExtendedNMatrix(FloatMatrix& answer, Node* node, TimeStep * tStep) override;
-
-		void computeExtendedBMatrix( FloatMatrix &answer, Node *node, TimeStep *tStep ) override;
-
-        //computes the penetration of node given 
-        double computePenetration(Node * node, TimeStep * tStep) override;
-
-		bool hasNonLinearGeometry( Node *node, TimeStep *tStep ) override;
-
-		void computeMetricTensor( FloatMatrix &answer, Node *node, TimeStep *tStep ) override;
-
-        //the first one of those returns array of one segment, the second one of all segments
-        void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
-        void giveLocationArrays(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
-
-        void updateYourself(TimeStep * tStep) override;
-
-        const char *giveClassName() const override { return "Elementedgecontactsegment"; }
-        const char *giveInputRecordName() const override { return _IFT_ElementEdgeContactSegment_Name; }
-
-        void postInitialize() override;
+      ElementEdgeContactSegment(int n, Domain *aDomain) : ContactSegment(n, aDomain) { ; }
+      ~ElementEdgeContactSegment() {};
+      
+      IRResultType initializeFrom(InputRecord * ir);
+      //returns normalized n, which is an normal vector of contact
+      void computeNormal(FloatArray& answer, Node * node, TimeStep* tstep) override;
+      //returns non-normalized tangent vector at the point of contact
+      void computeTangent( FloatArray &answer, Node *node, TimeStep *tstep ) override;
+      //returns an extended N (aka A) matrix, integrated at point of contact of given node
+      void computeExtendedNMatrix(FloatMatrix& answer, Node* node, TimeStep * tStep) override;
+      //@todo: the following two functions should be merged
+      void computeExtendedBMatrix( FloatMatrix &answer, Node *node, TimeStep *tStep ) override;
+      void computedNdksi( FloatMatrix &answer, Node *node, TimeStep *tStep );
+      //computes the penetration of the slave node to the given(closest) segment
+      double computePenetration(Node * node, TimeStep * tStep) override;
+      // check for large strain mode      
+      bool hasNonLinearGeometry( Node *node, TimeStep *tStep ) override;
+      // computes metric tensor, m_ij = t_i \cdot t_j, for 2d linear element, this is equivalent to l^2
+      void computeMetricTensor( FloatMatrix &answer, Node *node, TimeStep *tStep ) override;  
+      //return location array of the slave node and master segment
+      void giveLocationArray(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) const override;
+      //this function is needed to allocate appropriate components of stiffness matrix
+      void giveLocationArrays(const IntArray& dofIdArray, IntArray& s_loc, const UnknownNumberingScheme& c_s) override;
+      void updateYourself(TimeStep * tStep) override;
+      
+      const char *giveClassName() const override { return "Elementedgecontactsegment"; }
+      const char *giveInputRecordName() const override { return _IFT_ElementEdgeContactSegment_Name; }
+      
+      void postInitialize() override;
     private:
-        IntArray edges;
-        IntArray lastEdge; //last edge worked with
-        std::vector<Node*> knownNodes;
-        std::vector<IntArray> knownClosestEdges;
-        int setnum;
-
-        typedef enum UpdateMode{UM_Never = 0, UM_EachStep = 1, UM_EveryQuery = 2};
-        UpdateMode updateMode;
-
-
-        void transformNormalToDeformedShape(FloatArray& normal, NLStructuralElement* elem, const FloatArray & lcoords, TimeStep *tStep);
-
-        //gives the closest edge to a given node in the form of an IntArray(elempos,edgepos)
-        //only computes it again if it wasn't determined for this node in this solution step yet
-        //(i.e. the array of known closest edges is reset after step convergence)
-        void giveClosestEdge(IntArray& answer, Node * node, TimeStep * tStep);
-
-        //computes distance of a point given by a set of coordinates to a line given by two sets of coordinates
-        //returns whether point of intersection is inbetween the line points
-        bool computeContactPoint(FloatArray& answer, const FloatArray& externalPoint, const FloatArray& linePoint1, const FloatArray& linePoint2/*, FloatArray * contactPointCoords = nullptr*/);
-
-        //searches the array of nodes to which a closest edge was already computed
-        //returns -1 if unsuccessful
-        inline int giveIndexOfKnownNode(const Node * node) {
-            for ( int i = knownNodes.size() - 1; i >= 0; i-- ) {
-                if ( node == knownNodes.at(i) ) return i;
-            }
-            return -1;
-        }
-
+      IntArray edges;
+      IntArray lastEdge; //last edge worked with
+      std::vector<Node*> knownNodes;
+      std::vector<IntArray> knownClosestEdges;
+      int setnum;
+      
+      enum UpdateMode{UM_Never = 0, UM_EachStep = 1, UM_EveryQuery = 2};
+      UpdateMode updateMode;
+      
+      //gives the closest edge to a given node in the form of an IntArray(elempos,edgepos)
+      //only computes it again if it wasn't determined for this node in this solution step yet
+      //(i.e. the array of known closest edges is reset after step convergence)
+      void giveClosestEdge(IntArray& answer, Node * node, TimeStep * tStep);
+      
+      //computes distance of a point given by a set of coordinates to a line given by two sets of coordinates
+      //returns whether point of intersection is inbetween the line points
+      bool computeContactPoint(FloatArray& answer, const FloatArray& externalPoint, const FloatArray& linePoint1, const FloatArray& linePoint2/*, FloatArray * contactPointCoords = nullptr*/);
+      
+      //searches the array of nodes to which a closest edge was already computed
+      //returns -1 if unsuccessful
+      inline int giveIndexOfKnownNode(const Node * node) {
+	for ( int i = knownNodes.size() - 1; i >= 0; i-- ) {
+	  if ( node == knownNodes.at(i) ) return i;
+	}
+	return -1;
+      }
+      
     };
 
 }

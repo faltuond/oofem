@@ -1,4 +1,3 @@
-#pragma once
 
 #include "qelemedgecontactsegment.h"
 
@@ -31,7 +30,7 @@ namespace oofem {
         return 0.0;
     }
 
-    void QElementEdgeContactSegment::giveLocationArray(const IntArray & dofIdArray, IntArray & s_loc, const UnknownNumberingScheme & c_s)
+    void QElementEdgeContactSegment::giveLocationArray(const IntArray & dofIdArray, IntArray & s_loc, const UnknownNumberingScheme & c_s) const 
     {
 
     }

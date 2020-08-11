@@ -217,10 +217,12 @@ public:
     virtual void giveFirstPKStressVector_3d(FloatArray &answer, GaussPoint *gp, const FloatArray &reducedF, TimeStep *tStep);
     /// Default implementation relies on giveFirstPKStressVector_3d
     virtual void giveFirstPKStressVector_PlaneStrain(FloatArray &answer, GaussPoint *gp, const FloatArray &reducedF, TimeStep *tStep);
-    /// Default implementation relies on giveFirstPKStressVector_3d
+    /// Default implementation relies on giveFirstPKStressVector_StressControl
     virtual void giveFirstPKStressVector_PlaneStress(FloatArray &answer, GaussPoint *gp, const FloatArray &reducedF, TimeStep *tStep);
-    /// Default implementation relies on giveFirstPKStressVector_3d
+    /// Default implementation relies on giveFirstPKStressVector_StressControl
     virtual void giveFirstPKStressVector_1d(FloatArray &answer, GaussPoint *gp, const FloatArray &reducedF, TimeStep *tStep);
+    /// Iteratively calls giveRealStressVector_3d to find the stress controlled equal to zero·
+    virtual void giveFirstPKStressVector_StressControl(FloatArray &answer, GaussPoint *gp, const FloatArray &reducedvF, const IntArray &F_control, TimeStep *tStep);
     //@}
 
     /**

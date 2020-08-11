@@ -76,7 +76,7 @@ public:
     //determines whether geometrical non-linearity should be considered
     virtual bool hasNonLinearGeometry( Node *node, TimeStep *tStep ) override { return false; };
 
-    void giveLocationArray( const IntArray &dofIdArray, IntArray &s_loc, const UnknownNumberingScheme &c_s ) override;
+    void giveLocationArray( const IntArray &dofIdArray, IntArray &s_loc, const UnknownNumberingScheme &c_s ) const override;
     void giveLocationArrays( const IntArray &dofIdArray, IntArray &s_loc, const UnknownNumberingScheme &c_s ) override;
 
     void updateYourself( TimeStep *tStep ) override;
@@ -106,7 +106,7 @@ private:
     //returns -1 if unsuccessful
     inline int giveIndexOfKnownNode( const Node *node )
     {
-        for ( int i = 0; i < knownNodes.size(); i++ ) {
+        for ( u_int i = 0; i < knownNodes.size(); i++ ) {
             if ( node == knownNodes.at( i ) ) return i;
         }
         return -1;
