@@ -205,7 +205,7 @@ namespace oofem {
             }
         }
 
-        segment->computeExtendedNMatrix(extendedN, node, tStep);
+        segment->computeSegmentNMatrix(extendedN, node, tStep);
         //normal should be given just as N^t * n;
         answer.beTProductOf(extendedN, normal);
     }

@@ -68,11 +68,11 @@ namespace oofem {
 	  //returns t1 and t2, vectors tangential to the segment (i.e. perpendicular to normal)
 	  virtual void computeTangent( FloatArray &answer, Node *node, TimeStep *tstep ) = 0;
 
-      //returns an extended N (aka A) matrix, integrated at point of contact of given node
-      virtual void computeExtendedNMatrix(FloatMatrix& answer, Node* node, TimeStep * tStep) = 0;
+      //returns an extended N (aka A) matrix, integrated at point of contact of given node (only segment part)
+      virtual void computeSegmentNMatrix(FloatMatrix& answer, Node* node, TimeStep * tStep) = 0;
 
-	  //returns a xi derivative of the extended N matrix at point of contact of given node
-      virtual void computeExtendedBMatrix(FloatMatrix &answer, Node *node, TimeStep *tStep ) = 0;
+	  //returns a xi derivative of the extended N matrix at point of contact of given node (only segment part)
+      virtual void computeSegmentBMatrix(FloatMatrix &answer, Node *node, TimeStep *tStep ) = 0;
 
       //computes the penetration of node given 
       virtual double computePenetration(Node * node, TimeStep * tStep) = 0;

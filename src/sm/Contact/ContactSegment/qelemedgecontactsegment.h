@@ -62,13 +62,13 @@ public:
     void computeTangent( FloatArray &answer, Node *node, TimeStep *tstep ) override;
 
     //returns an extended N (aka A) matrix, integrated at point of contact of given node
-    void computeExtendedNMatrix( FloatMatrix &answer, Node *node, TimeStep *tStep ) override;
+    void computeSegmentNMatrix( FloatMatrix &answer, Node *node, TimeStep *tStep ) override;
 
     //computes the penetration of node given
     double computePenetration( Node *node, TimeStep *tStep ) override;
 
     //returns a xi derivative of the extended N matrix at point of contact of given node
-    virtual void computeExtendedBMatrix( FloatMatrix &answer, Node *node, TimeStep *tStep ) override{};
+    virtual void computeSegmentBMatrix( FloatMatrix &answer, Node *node, TimeStep *tStep ) override{};
 
 	//returns the metric tensor m
     virtual void computeMetricTensor( FloatMatrix &answer, Node *node, TimeStep *tStep ) override{};
@@ -106,7 +106,7 @@ private:
     //returns -1 if unsuccessful
     inline int giveIndexOfKnownNode( const Node *node )
     {
-        for ( u_int i = 0; i < knownNodes.size(); i++ ) {
+        for ( int i = 0; i < knownNodes.size(); i++ ) {
             if ( node == knownNodes.at( i ) ) return i;
         }
         return -1;

@@ -20,7 +20,7 @@ namespace oofem {
     {
     }
 
-    void QElementEdgeContactSegment::computeExtendedNMatrix(FloatMatrix & answer, Node * node, TimeStep * tStep)
+    void QElementEdgeContactSegment::computeSegmentNMatrix(FloatMatrix & answer, Node * node, TimeStep * tStep)
     {
 
     }

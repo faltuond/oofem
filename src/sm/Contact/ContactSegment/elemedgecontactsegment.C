@@ -36,7 +36,7 @@ namespace oofem {
 			e3.at(3) = 1.;
 			normal3D.beVectorProductOf(e3, tangent3D);
 			answer = normal3D;
-			answer.times(1./normal3D.computeNorm());
+			answer.times(-1./normal3D.computeNorm());
 			answer.resizeWithValues(2);
 		}
 		else {
@@ -95,23 +95,23 @@ namespace oofem {
         FloatArray nodalCoords;
         FloatArray nodalCoords2;
 
-	elem->giveNode( edgeNodes( 0 ) )->giveUpdatedCoordinates( nodalCoords, tStep );
+		elem->giveNode( edgeNodes( 0 ) )->giveUpdatedCoordinates( nodalCoords, tStep );
         elem->giveNode( edgeNodes( 1 ) )->giveUpdatedCoordinates( nodalCoords2, tStep );
 
-	nodalCoords.append(nodalCoords2);
+		nodalCoords.append(nodalCoords2);
         FloatMatrix dNdXi;
         computedNdksi( dNdXi, node, tStep );
-	answer.beProductOf( dNdXi, nodalCoords );
+		answer.beProductOf( dNdXi, nodalCoords );
     }
 
-    void ElementEdgeContactSegment::computeExtendedNMatrix(FloatMatrix & answer, Node * node, TimeStep * tStep)
+    void ElementEdgeContactSegment::computeSegmentNMatrix(FloatMatrix & answer, Node * node, TimeStep * tStep)
     {
         IntArray closestEdge;
         giveClosestEdge(closestEdge, node, tStep);
         if ( closestEdge.giveSize() != 2 ) {
             //no closest edge means no contact
             //return zeros
-            answer.resize(2, 6);
+            answer.resize(2, 4);
             return;
         }
 
@@ -125,35 +125,41 @@ namespace oofem {
 
         node->giveUpdatedCoordinates(nodeCoords, tStep);
         elem->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
-	elem->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
+		elem->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);
         bool inbetween = computeContactPoint(cPointLocal, nodeCoords, edgeNode1Coords, edgeNode2Coords);
         //all the previous just to compute the contact point...
         elem->computeEdgeNMatrix(N, edgePos, cPointLocal);
-        answer.resize(N.giveNumberOfRows(), N.giveNumberOfColumns() + 2);
+
+        /*answer.resize(N.giveNumberOfRows(), N.giveNumberOfColumns() + 2);
         answer.zero();
 
         FloatMatrix extension(2, 2);
         extension.beUnitMatrix();
 
-	N.times(-1);
+		N.times(-1);
         answer.setSubMatrix(extension, 1, 1);
-        answer.setSubMatrix(N, 1, 3);
+        answer.setSubMatrix(N, 1, 3);*/
 
+		//change to have the extensions added later in the contact condition class
+		answer = N; 
 	
     }
 
-    void ElementEdgeContactSegment::computeExtendedBMatrix( FloatMatrix &answer, Node *node, TimeStep *tStep )
+    void ElementEdgeContactSegment::computeSegmentBMatrix( FloatMatrix &answer, Node *node, TimeStep *tStep )
     {
-      //for linear segments, this is always the same
-      answer = {{0,0},{0,0}, {-0.5, 0},{0, -0.5},{0.5,0},{0,0.5}};
-      answer.times(2);
-    }
+		//for linear segments, this is always the same
+		/*answer = {{0,0},{0,0}, {-0.5, 0},{0, -0.5},{0.5,0},{0,0.5}};
+		answer.times(2);*/
+
+		//change to have the extensions added later in the contact condition classs
+		computedNdksi(answer, node, tStep);
+	}
 
     void ElementEdgeContactSegment::computedNdksi( FloatMatrix &answer, Node *node, TimeStep *tStep )
     {
-      //for linear segments, this is always the same
-      answer = {{-0.5, 0},{0, -0.5},{0.5,0},{0,0.5}};
-      answer.times(2);
+		//for linear segments, this is always the same
+		answer = {{-0.5, 0},{0, -0.5},{0.5,0},{0,0.5}};
+        answer.times( 2 );
     }
   
 
@@ -176,7 +182,7 @@ namespace oofem {
         element->giveBoundaryEdgeNodes(edgeNodes, closestEdge.at(2));
 
         element->giveNode(edgeNodes(0))->giveUpdatedCoordinates(edgeNode1Coords, tStep);
-	element->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);	
+		element->giveNode(edgeNodes(1))->giveUpdatedCoordinates(edgeNode2Coords, tStep);	
 
         bool inbetween = computeContactPoint(cPointLocal, nodeCoords, edgeNode1Coords, edgeNode2Coords);
 	if(inbetween == false) {

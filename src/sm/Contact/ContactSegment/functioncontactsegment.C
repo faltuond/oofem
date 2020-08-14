@@ -34,22 +34,20 @@ namespace oofem {
 		OOFEM_ERROR( "Tangent vector for function segments not implemented" );
     }
 
-    void FunctionContactSegment::computeExtendedNMatrix(FloatMatrix & answer, Node * node, TimeStep * tStep)
+    void FunctionContactSegment::computeSegmentNMatrix(FloatMatrix & answer, Node * node, TimeStep * tStep)
     {
-        //returns just [[-1, 0], so that localization happens on node only
-        //              [ 0,-1]]
+        //returns an empty matrix with the appropriate number of rows
         //adapted to size of node coordinates to make the class independent on dimension
         int ncoords = node->giveCoordinates()->giveSize();
-        answer.resize(ncoords, ncoords);
-        answer.beUnitMatrix();
-        answer.times(-1.); //?? seems reasonable to maintain compatibility with other segments
+        answer.resize(ncoords, 0);
     }
 
-    void FunctionContactSegment::computeExtendedBMatrix( FloatMatrix &answer, Node *node, TimeStep *tStep )
+    void FunctionContactSegment::computeSegmentBMatrix( FloatMatrix &answer, Node *node, TimeStep *tStep )
     {
 		//is only the nodal part,same as extN, which in this case is all zeros
+		//new - the nodal part is not added here
         int ncoords = node->giveCoordinates()->giveSize();
-        answer.resize( ncoords, ncoords );
+        answer.resize( ncoords, 0 );
     }
 
     bool FunctionContactSegment::hasNonLinearGeometry( Node *node, TimeStep *tStep )

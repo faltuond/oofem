@@ -58,10 +58,10 @@ namespace oofem {
 		void computeTangent( FloatArray &answer, Node *node, TimeStep *tstep ) override;
 
         //returns an extended N (aka A) matrix, integrated at point of contact of given node
-        void computeExtendedNMatrix(FloatMatrix& answer, Node* node, TimeStep * tStep) override;
+        void computeSegmentNMatrix(FloatMatrix& answer, Node* node, TimeStep * tStep) override;
 
 		//returns an extended N (aka A) matrix, integrated at point of contact of given node
-        void computeExtendedBMatrix( FloatMatrix &answer, Node *node, TimeStep *tStep ) override;
+        void computeSegmentBMatrix( FloatMatrix &answer, Node *node, TimeStep *tStep ) override;
 
 		bool hasNonLinearGeometry( Node *node, TimeStep *tStep ) override;
 

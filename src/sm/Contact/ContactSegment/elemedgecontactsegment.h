@@ -64,9 +64,9 @@ namespace oofem {
       //returns non-normalized tangent vector at the point of contact
       void computeTangent( FloatArray &answer, Node *node, TimeStep *tstep ) override;
       //returns an extended N (aka A) matrix, integrated at point of contact of given node
-      void computeExtendedNMatrix(FloatMatrix& answer, Node* node, TimeStep * tStep) override;
+      void computeSegmentNMatrix(FloatMatrix& answer, Node* node, TimeStep * tStep) override;
       //@todo: the following two functions should be merged
-      void computeExtendedBMatrix( FloatMatrix &answer, Node *node, TimeStep *tStep ) override;
+      void computeSegmentBMatrix( FloatMatrix &answer, Node *node, TimeStep *tStep ) override;
       void computedNdksi( FloatMatrix &answer, Node *node, TimeStep *tStep );
       //computes the penetration of the slave node to the given(closest) segment
       double computePenetration(Node * node, TimeStep * tStep) override;

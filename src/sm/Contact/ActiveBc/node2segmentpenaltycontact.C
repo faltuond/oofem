@@ -126,7 +126,7 @@ void Node2SegmentPenaltyContact::computeNvMatrixAt( FloatArray &answer, Node *no
 {
 
     FloatArray normal;
-    FloatMatrix extendedN;
+    FloatMatrix segmentN, extendedN;
 
     if ( prescribedNormal.giveSize() == node->giveNumberOfDofs() ) {
         normal = prescribedNormal;
@@ -138,23 +138,38 @@ void Node2SegmentPenaltyContact::computeNvMatrixAt( FloatArray &answer, Node *no
       normal.normalize();
     }
 
-    segment->computeExtendedNMatrix( extendedN, node, tStep );
+    segment->computeSegmentNMatrix( segmentN, node, tStep );
+	extendedN.resize(segmentN.giveNumberOfRows(), segmentN.giveNumberOfColumns() + 2);
+	extendedN.zero();
+	FloatMatrix extension(2, 2);
+	extension.beUnitMatrix();
+	segmentN.times(-1);
+	extendedN.setSubMatrix(extension, 1, 1);
+	extendedN.setSubMatrix(segmentN, 1, 3);
 
     //Nv should be given just as N^t * n;
-    answer.beTProductOf( extendedN, normal );
+    answer.beTProductOf(extendedN, normal );
 }
 
 void Node2SegmentPenaltyContact::computeTvMatrixAt( FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep )
 {
     FloatArray tangent;
-    FloatMatrix extendedN;
+	FloatMatrix segmentN, extendedN;
 
     if ( prescribedNormal.giveSize() == node->giveNumberOfDofs() ) {
         OOFEM_WARNING( "Prescribed normal inapplicable for use with large strains" );
     }
     segment->computeTangent( tangent, node, tStep );
     tangent.normalize();
-    segment->computeExtendedNMatrix( extendedN, node, tStep );
+
+    segment->computeSegmentNMatrix(segmentN, node, tStep );
+	extendedN.resize(segmentN.giveNumberOfRows(), segmentN.giveNumberOfColumns() + 2);
+	extendedN.zero();
+	FloatMatrix extension(2, 2);
+	extension.beUnitMatrix();
+	segmentN.times(-1);
+	extendedN.setSubMatrix(extension, 1, 1);
+	extendedN.setSubMatrix(segmentN, 1, 3);
 
     //Tv should be given just as N^t * t;
     answer.beTProductOf( extendedN, tangent );
@@ -163,7 +178,7 @@ void Node2SegmentPenaltyContact::computeTvMatrixAt( FloatArray &answer, Node *no
 void Node2SegmentPenaltyContact::computeBvMatrixAt( FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep )
 {
     FloatArray normal;
-    FloatMatrix extendedB;
+    FloatMatrix segmentB, extendedB;
 
     if ( prescribedNormal.giveSize() == node->giveNumberOfDofs() ) {
         normal = prescribedNormal;
@@ -172,8 +187,13 @@ void Node2SegmentPenaltyContact::computeBvMatrixAt( FloatArray &answer, Node *no
     }
     normal.normalize();
 
-    segment->computeExtendedBMatrix( extendedB, node, tStep );
-
+    segment->computeSegmentBMatrix(segmentB, node, tStep );
+	extendedB.resize(segmentB.giveNumberOfRows(), segmentB.giveNumberOfColumns() + 2);
+	extendedB.zero();
+	FloatMatrix extension(2, 2);
+	segmentB.times(-1);
+	extendedB.setSubMatrix(extension, 1, 1);
+	extendedB.setSubMatrix(segmentB, 1, 3);
 
     //Bv should be given just as B^t * n;
     answer.beTProductOf( extendedB, normal );
