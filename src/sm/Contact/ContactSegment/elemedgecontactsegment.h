@@ -35,6 +35,7 @@
 
 
 #pragma once
+#include "boundarycontactsegment.h"
 #include "contactsegment.h"
 #include "node.h"
 #include "inputrecord.h"
@@ -45,18 +46,18 @@
 #include "Elements/nlstructuralelement.h"
 #include "Materials/structuralmaterial.h"
 
-#define _IFT_ElementEdgeContactSegment_Name "elementedgecontactsegment"
-#define _IFT_ElementEdgeContactSegment_edgeSet "edgeset"
-#define _IFT_ElementEdgeContactSegment_pairUpdateMode "pairupdatemode"
+#define _IFT_Linear2dElementEdgeContactSegment_Name "elementedgecontactsegment"
+#define _IFT_Linear2dElementEdgeContactSegment_edgeSet "edgeset"
+#define _IFT_Linear2dElementEdgeContactSegment_pairUpdateMode "pairupdatemode"
  //#define _IFT_ElementEdgeContactSegment_elemSet "elemset"
 
 namespace oofem {
   //@todo: change name to something like Linear2dElementEdgeContactSegment, or ElementEdgeContactSegment_2dLinear, ... ?
-    class ElementEdgeContactSegment : public ContactSegment
+    class Linear2dElementEdgeContactSegment : public BoundaryContactSegment
     {
     public:
-      ElementEdgeContactSegment(int n, Domain *aDomain) : ContactSegment(n, aDomain) { ; }
-      ~ElementEdgeContactSegment() {};
+      Linear2dElementEdgeContactSegment(int n, Domain *aDomain) : BoundaryContactSegment(n, aDomain) { ; }
+      ~Linear2dElementEdgeContactSegment() {};
       
       IRResultType initializeFrom(InputRecord * ir);
       //returns normalized n, which is an normal vector of contact
@@ -81,7 +82,7 @@ namespace oofem {
       void updateYourself(TimeStep * tStep) override;
       
       const char *giveClassName() const override { return "Elementedgecontactsegment"; }
-      const char *giveInputRecordName() const override { return _IFT_ElementEdgeContactSegment_Name; }
+      const char *giveInputRecordName() const override { return _IFT_Linear2dElementEdgeContactSegment_Name; }
       
       void postInitialize() override;
     private:

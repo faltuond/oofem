@@ -332,6 +332,7 @@ set (sm_unsorted
     Contact/ContactSegment/polynomialcontactsegment.C
     Contact/ContactSegment/nrfunctioncontactsegment2d.C
     Contact/ContactSegment/circlecontactsegment.C
+    Contact/ContactSegment/boundarycontactsegment.C
     )
 
   

@@ -4,27 +4,27 @@
 namespace oofem {
 
 
-    REGISTER_ContactSegment(ElementEdgeContactSegment);
+    REGISTER_ContactSegment(Linear2dElementEdgeContactSegment);
 
 
-  IRResultType ElementEdgeContactSegment::initializeFrom(InputRecord * ir)
+  IRResultType Linear2dElementEdgeContactSegment::initializeFrom(InputRecord * ir)
   {
     IRResultType result;
     //IR_GIVE_FIELD(ir, this->elemSet, _IFT_ElementEdgeContactSegment_elemSet);
-    IR_GIVE_FIELD(ir, setnum, _IFT_ElementEdgeContactSegment_edgeSet);
+    IR_GIVE_FIELD(ir, setnum, _IFT_Linear2dElementEdgeContactSegment_edgeSet);
     
     updateMode = UM_EachStep;
     int updateModeInt = 0;
-        IR_GIVE_OPTIONAL_FIELD(ir, updateModeInt, _IFT_ElementEdgeContactSegment_pairUpdateMode);
+        IR_GIVE_OPTIONAL_FIELD(ir, updateModeInt, _IFT_Linear2dElementEdgeContactSegment_pairUpdateMode);
         if ( result == IRRT_OK ) {
             updateMode = (UpdateMode)updateModeInt;
             if ( updateModeInt < 0 || updateModeInt > 2 ) OOFEM_ERROR("Contact segment pairing update mode can be only 0, 1 or 2");
         }
 
-        return ContactSegment::initializeFrom(ir);
+        return BoundaryContactSegment::initializeFrom(ir);
     }
 
-    void ElementEdgeContactSegment::computeNormal(FloatArray & answer, Node * node, TimeStep* tStep)
+    void Linear2dElementEdgeContactSegment::computeNormal(FloatArray & answer, Node * node, TimeStep* tStep)
     {
 		if (this->hasNonLinearGeometry(node, tStep)) {
 			//determine normal from tangent as t vector cross product e3
@@ -69,7 +69,7 @@ namespace oofem {
 			//retrieve edge normal from element interpolation
 			FEInterpolation2d* interpolation = dynamic_cast<FEInterpolation2d*>(elem->giveInterpolation());
 			if (interpolation == nullptr) {
-				OOFEM_ERROR("Non-2D element encountered in ElementEdgeContactSegment");
+				OOFEM_ERROR("Non-2D element encountered in Linear2dElementEdgeContactSegment");
 			}
 			interpolation->edgeEvalNormal(normal, edgePos, cPointLocal, FEIElementGeometryWrapper(elem));
 
@@ -77,7 +77,7 @@ namespace oofem {
 		}
     }
 
-    void ElementEdgeContactSegment::computeTangent( FloatArray &answer, Node *node, TimeStep *tStep )
+    void Linear2dElementEdgeContactSegment::computeTangent( FloatArray &answer, Node *node, TimeStep *tStep )
     {
         IntArray closestEdge;
         giveClosestEdge( closestEdge, node, tStep );
@@ -104,7 +104,7 @@ namespace oofem {
 		answer.beProductOf( dNdXi, nodalCoords );
     }
 
-    void ElementEdgeContactSegment::computeSegmentNMatrix(FloatMatrix & answer, Node * node, TimeStep * tStep)
+    void Linear2dElementEdgeContactSegment::computeSegmentNMatrix(FloatMatrix & answer, Node * node, TimeStep * tStep)
     {
         IntArray closestEdge;
         giveClosestEdge(closestEdge, node, tStep);
@@ -145,7 +145,7 @@ namespace oofem {
 	
     }
 
-    void ElementEdgeContactSegment::computeSegmentBMatrix( FloatMatrix &answer, Node *node, TimeStep *tStep )
+    void Linear2dElementEdgeContactSegment::computeSegmentBMatrix( FloatMatrix &answer, Node *node, TimeStep *tStep )
     {
 		//for linear segments, this is always the same
 		/*answer = {{0,0},{0,0}, {-0.5, 0},{0, -0.5},{0.5,0},{0,0.5}};
@@ -155,7 +155,7 @@ namespace oofem {
 		computedNdksi(answer, node, tStep);
 	}
 
-    void ElementEdgeContactSegment::computedNdksi( FloatMatrix &answer, Node *node, TimeStep *tStep )
+    void Linear2dElementEdgeContactSegment::computedNdksi( FloatMatrix &answer, Node *node, TimeStep *tStep )
     {
 		//for linear segments, this is always the same
 		answer = {{-0.5, 0},{0, -0.5},{0.5,0},{0,0.5}};
@@ -163,7 +163,7 @@ namespace oofem {
     }
   
 
-    double ElementEdgeContactSegment::computePenetration(Node * node, TimeStep * tStep)
+    double Linear2dElementEdgeContactSegment::computePenetration(Node * node, TimeStep * tStep)
     {
         IntArray closestEdge;
         giveClosestEdge(closestEdge, node, tStep);
@@ -197,7 +197,7 @@ namespace oofem {
 	return projection.dotProduct(normal);
     }
 
-    bool ElementEdgeContactSegment::hasNonLinearGeometry( Node *node, TimeStep *tStep )
+    bool Linear2dElementEdgeContactSegment::hasNonLinearGeometry( Node *node, TimeStep *tStep )
     {
         IntArray closestEdge;
         giveClosestEdge( closestEdge, node, tStep );
@@ -209,7 +209,7 @@ namespace oofem {
         return elem != nullptr && elem->giveGeometryMode() == 1;
     }
 
-    void ElementEdgeContactSegment::computeMetricTensor( FloatMatrix &answer, Node *node, TimeStep *tStep )
+    void Linear2dElementEdgeContactSegment::computeMetricTensor( FloatMatrix &answer, Node *node, TimeStep *tStep )
     {
         answer.resize( 1, 1 );
         //the answer is length of segment, which is in fact the size of tangent, squared
@@ -219,7 +219,7 @@ namespace oofem {
         answer.at( 1, 1 ) = l * l;
     }
 
-    void ElementEdgeContactSegment::giveLocationArray(const IntArray & dofIdArray, IntArray & answer, const UnknownNumberingScheme & c_s) const
+    void Linear2dElementEdgeContactSegment::giveLocationArray(const IntArray & dofIdArray, IntArray & answer, const UnknownNumberingScheme & c_s) const
     {
         if ( lastEdge.giveSize() == 2 ) {
             StructuralElement* element = (StructuralElement*)this->giveDomain()->giveElement(lastEdge.at(1));
@@ -235,7 +235,7 @@ namespace oofem {
 
     }
 
-    void ElementEdgeContactSegment::giveLocationArrays(const IntArray & dofIdArray, IntArray & answer, const UnknownNumberingScheme & c_s)
+    void Linear2dElementEdgeContactSegment::giveLocationArrays(const IntArray & dofIdArray, IntArray & answer, const UnknownNumberingScheme & c_s)
     {
         answer.resize(0);
         IntArray edgeloc, boundaryNodes;
@@ -252,7 +252,7 @@ namespace oofem {
     }
 
 
-    void ElementEdgeContactSegment::giveClosestEdge(IntArray & answer, Node * node, TimeStep * tStep)
+    void Linear2dElementEdgeContactSegment::giveClosestEdge(IntArray & answer, Node * node, TimeStep * tStep)
     {
         int knownIndex = giveIndexOfKnownNode(node);
         if (updateMode != UM_EveryQuery && knownIndex != -1 && knownClosestEdges.at(knownIndex).giveSize() == 2 ) {
@@ -308,7 +308,7 @@ namespace oofem {
         lastEdge = answer;
     }
 
-  bool ElementEdgeContactSegment::computeContactPoint(FloatArray &ksi, const FloatArray & externalPoint, const FloatArray & linePoint1, const FloatArray & linePoint2)
+  bool Linear2dElementEdgeContactSegment::computeContactPoint(FloatArray &ksi, const FloatArray & externalPoint, const FloatArray & linePoint1, const FloatArray & linePoint2)
   {
       //@todo: general function for the closest point projection should be introduced in a parent class
       ksi.resize(1);
@@ -324,7 +324,7 @@ namespace oofem {
       return (ksi.at(1) <= 1 && ksi.at(1) >= -1);
     }
 
-    void ElementEdgeContactSegment::updateYourself(TimeStep *tStep)
+    void Linear2dElementEdgeContactSegment::updateYourself(TimeStep *tStep)
         // Updates the receiver at end of step.
     {
         if ( updateMode != UM_Never ) {
@@ -335,7 +335,7 @@ namespace oofem {
     }
 
 
-    void ElementEdgeContactSegment::postInitialize()
+    void Linear2dElementEdgeContactSegment::postInitialize()
     {
 
         Set* set = this->giveDomain()->giveSet(this->setnum);
