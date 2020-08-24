@@ -74,30 +74,27 @@ void Node2SegmentPenaltyContact::computeTangentFromContact( FloatMatrix &answer,
         this->computeBvMatrixAt( Bv, node, segment, tStep );
         this->computeTvMatrixAt( Tv, node, segment, tStep );
 
-	FloatMatrix m;
+		FloatMatrix m;
         segment->computeMetricTensor( m, node, tStep );
-	//placeholder for 2D only
-	l = sqrt( m.at( 1, 1 ) );
+        //placeholder for 2D only
+        l = sqrt( m.at( 1, 1 ) );
 
 
-	k2.beDyadicProductOf( Bv, Tv );
+		k2.beDyadicProductOf( Bv, Tv );
         k2.times( -penalty * gap  / l );
 	
-	k3.beDyadicProductOf( Tv, Bv );
+		k3.beDyadicProductOf( Tv, Bv );
         k3.times( -penalty * gap / l );
 	
-	k4.beDyadicProductOf( Bv, Bv );
+		k4.beDyadicProductOf( Bv, Bv );
         k4.times( -penalty * gap * gap / (l*l) );
 
-	answer.add( k2 );
+		answer.add( k2 );
         answer.add( k3 );
         answer.add( k4 );
-	
-	
-
     }
     if (gap >= 0.0){
-      //zero in the case of no contact occuring
+		//zero in the case of no contact occuring
         answer.zero();
     }
 }
