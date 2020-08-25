@@ -103,7 +103,6 @@ private:
     void computeTvMatrixAt( FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep );
     void computeBvMatrixAt( FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep );
 
-    
 };
 } // end namespace oofem
 #endif // node2nodecontact_h

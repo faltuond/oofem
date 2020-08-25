@@ -109,7 +109,7 @@ namespace oofem {
 
         void computeGap(double &answer, Node *node, ContactSegment *segment, TimeStep *tStep);
 
-        void computeNormalMatrixAt(FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *TimeStep);
+        void computeNvMatrixAt(FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *TimeStep);
 
         void computeExternalForcesFromContact(FloatArray &answer, Node *node, ContactSegment *segment, TimeStep *tStep);
 

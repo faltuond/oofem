@@ -52,7 +52,7 @@ class FloatArray;
  * Can work with any sparse matrix implementation. However, the sparse matrix implementation have to support
  * its factorization (canBeFactorized method).
  */
-class OOFEM_EXPORT DSSSolver : public SparseLinearSystemNM
+class /*OOFEM_EXPORT*/ DSSSolver : public SparseLinearSystemNM
 {
 public:
     /**

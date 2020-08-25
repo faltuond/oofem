@@ -124,6 +124,7 @@ void Node2SegmentPenaltyContact::computeNvMatrixAt( FloatArray &answer, Node *no
 
     FloatArray normal;
     FloatMatrix segmentN, extendedN;
+	int ndof = node->giveNumberOfDofs();
 
     if ( prescribedNormal.giveSize() == node->giveNumberOfDofs() ) {
         normal = prescribedNormal;
@@ -136,13 +137,19 @@ void Node2SegmentPenaltyContact::computeNvMatrixAt( FloatArray &answer, Node *no
     }
 
     segment->computeSegmentNMatrix( segmentN, node, tStep );
+
+	if (segmentN.giveNumberOfRows() != ndof) {
+		OOFEM_ERROR("Dimension mismatch between node and contact segment");
+	}
+
+	//append extesion
 	extendedN.resize(segmentN.giveNumberOfRows(), segmentN.giveNumberOfColumns() + 2);
 	extendedN.zero();
-	FloatMatrix extension(2, 2);
+	FloatMatrix extension(ndof, ndof);
 	extension.beUnitMatrix();
 	segmentN.times(-1);
 	extendedN.setSubMatrix(extension, 1, 1);
-	extendedN.setSubMatrix(segmentN, 1, 3);
+	extendedN.setSubMatrix(segmentN, 1, ndof + 1);
 
     //Nv should be given just as N^t * n;
     answer.beTProductOf(extendedN, normal );
@@ -152,6 +159,7 @@ void Node2SegmentPenaltyContact::computeTvMatrixAt( FloatArray &answer, Node *no
 {
     FloatArray tangent;
 	FloatMatrix segmentN, extendedN;
+	int ndof = node->giveNumberOfDofs();
 
     if ( prescribedNormal.giveSize() == node->giveNumberOfDofs() ) {
         OOFEM_WARNING( "Prescribed normal inapplicable for use with large strains" );
@@ -160,13 +168,18 @@ void Node2SegmentPenaltyContact::computeTvMatrixAt( FloatArray &answer, Node *no
     tangent.normalize();
 
     segment->computeSegmentNMatrix(segmentN, node, tStep );
+
+	if (segmentN.giveNumberOfRows() != ndof) {
+		OOFEM_ERROR("Dimension mismatch between node and contact segment");
+	}
+
 	extendedN.resize(segmentN.giveNumberOfRows(), segmentN.giveNumberOfColumns() + 2);
 	extendedN.zero();
-	FloatMatrix extension(2, 2);
+	FloatMatrix extension(ndof, ndof);
 	extension.beUnitMatrix();
 	segmentN.times(-1);
 	extendedN.setSubMatrix(extension, 1, 1);
-	extendedN.setSubMatrix(segmentN, 1, 3);
+	extendedN.setSubMatrix(segmentN, 1, ndof+1);
 
     //Tv should be given just as N^t * t;
     answer.beTProductOf( extendedN, tangent );
@@ -176,6 +189,7 @@ void Node2SegmentPenaltyContact::computeBvMatrixAt( FloatArray &answer, Node *no
 {
     FloatArray normal;
     FloatMatrix segmentB, extendedB;
+	int ndof = node->giveNumberOfDofs();
 
     if ( prescribedNormal.giveSize() == node->giveNumberOfDofs() ) {
         normal = prescribedNormal;
@@ -185,12 +199,17 @@ void Node2SegmentPenaltyContact::computeBvMatrixAt( FloatArray &answer, Node *no
     normal.normalize();
 
     segment->computeSegmentBMatrix(segmentB, node, tStep );
+
+	if (segmentB.giveNumberOfRows() != ndof) {
+		OOFEM_ERROR("Dimension mismatch between node and contact segment");
+	}
+
 	extendedB.resize(segmentB.giveNumberOfRows(), segmentB.giveNumberOfColumns() + 2);
 	extendedB.zero();
-	FloatMatrix extension(2, 2);
+	FloatMatrix extension(ndof, ndof);
 	segmentB.times(-1);
 	extendedB.setSubMatrix(extension, 1, 1);
-	extendedB.setSubMatrix(segmentB, 1, 3);
+	extendedB.setSubMatrix(segmentB, 1, ndof + 1);
 
     //Bv should be given just as B^t * n;
     answer.beTProductOf( extendedB, normal );
@@ -273,14 +292,6 @@ void Node2SegmentPenaltyContact:: giveLocationArray(IntArray &loc, const Unknown
   segment->giveLocationArray( dofIdArray, seg_loc, ns);
   loc.followedBy( seg_loc );
 }
-
-  
-
-
-
-
-
-
 
 void Node2SegmentPenaltyContact::giveLocationArrays( std::vector<IntArray> &rows, std::vector<IntArray> &cols, CharType type, const UnknownNumberingScheme &r_s, const UnknownNumberingScheme &c_s )
 {

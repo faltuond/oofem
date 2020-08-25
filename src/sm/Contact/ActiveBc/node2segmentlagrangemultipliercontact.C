@@ -97,7 +97,7 @@ namespace oofem {
                     Node* node = this->giveDomain()->giveNode(nodeSet.at(nodePos));
                     ContactSegment* segment = (this->giveDomain()->giveContactSegment(segmentSet.at(segmentPos)));
 
-                    this->computeNormalMatrixAt(n, node, segment, tStep);
+                    this->computeNvMatrixAt(n, node, segment, tStep);
                     Dof *mdof = *(lmdm.at(lmpos - 1)->begin());
 
                     n.times(mdof->giveUnknown(mode, tStep));
@@ -175,7 +175,7 @@ namespace oofem {
         double gap;
         FloatArray Nv;
         this->computeGap(gap, node, segment, tStep);
-        this->computeNormalMatrixAt(Nv, node, segment, tStep);
+        this->computeNvMatrixAt(Nv, node, segment, tStep);
         answer.initFromVector(Nv, false);
 
         return gap;
@@ -186,28 +186,61 @@ namespace oofem {
         answer = segment->computePenetration(node, tStep);
     }
 
-    void Node2SegmentLagrangianMultiplierContact::computeNormalMatrixAt(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * tStep)
+    void Node2SegmentLagrangianMultiplierContact::computeNvMatrixAt(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * tStep)
     {
-        //computeNormal is expected to return an integrated term
-        // int across seg (N^T), where N = element Nmatrix (extended by zeros for the node)
+        ////computeNormal is expected to return an integrated term
+        //// int across seg (N^T), where N = element Nmatrix (extended by zeros for the node)
 
-        FloatArray normal;
-        FloatMatrix extendedN, extendedNTranspose;
+        //FloatArray normal;
+        //FloatMatrix extendedN, extendedNTranspose;
 
-        if ( prescribedNormal.giveSize() == node->giveNumberOfDofs() ) {
-            normal = prescribedNormal;
-        }
-        else {
-            segment->computeNormal(normal, node, tStep);
-            double norm = normal.computeNorm();
-            if ( norm != 0 ) {
-                normal.times(1. / norm);
-            }
-        }
+        //if ( prescribedNormal.giveSize() == node->giveNumberOfDofs() ) {
+        //    normal = prescribedNormal;
+        //}
+        //else {
+        //    segment->computeNormal(normal, node, tStep);
+        //    double norm = normal.computeNorm();
+        //    if ( norm != 0 ) {
+        //        normal.times(1. / norm);
+        //    }
+        //}
 
-        segment->computeSegmentNMatrix(extendedN, node, tStep);
-        //normal should be given just as N^t * n;
-        answer.beTProductOf(extendedN, normal);
+        //segment->computeSegmentNMatrix(extendedN, node, tStep);
+        ////normal should be given just as N^t * n;
+        //answer.beTProductOf(extendedN, normal);
+
+		FloatArray normal;
+		FloatMatrix segmentN, extendedN;
+		int ndof = node->giveNumberOfDofs();
+
+		if (prescribedNormal.giveSize() == node->giveNumberOfDofs()) {
+			normal = prescribedNormal;
+		}
+		else {
+			segment->computeNormal(normal, node, tStep);
+		}
+		int norm = normal.computeNorm();
+		if (norm) {
+			normal.normalize();
+		}
+
+		segment->computeSegmentNMatrix(segmentN, node, tStep);
+
+		if (segmentN.giveNumberOfRows() != ndof) {
+			OOFEM_ERROR("Dimension mismatch between node and contact segment");
+		}
+
+		//append extension. Currenty appended to the END (in penalty/large strain formulation, it is the other way around)
+		extendedN.resize(segmentN.giveNumberOfRows(), segmentN.giveNumberOfColumns() + 2);
+		extendedN.zero();
+		FloatMatrix extension(ndof, ndof);
+		extension.beUnitMatrix();
+		extension.times(-1); //extension is negated, unlike penalty, where segmentN is negated instead
+		extendedN.setSubMatrix(extension, 1, segmentN.giveNumberOfColumns() + 1);
+		extendedN.setSubMatrix(segmentN, 1, 1);
+
+		//Nv should be given just as N^t * n;
+		answer.beTProductOf(extendedN, normal);
     }
 
     void Node2SegmentLagrangianMultiplierContact::computeExternalForcesFromContact(FloatArray & answer, Node * node, ContactSegment * segment, TimeStep * tStep)
