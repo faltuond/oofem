@@ -152,11 +152,11 @@ namespace oofem {
     private:
 
         /**
-         * Computes the vector of external forces from contact of two nodes, given as:
+         * Computes the tangential stiffness matrix from contact of two nodes, given as:
          * K_c = (N^T N)* p
          * where N is the normal matrix of contact and p is the penalty parameter
          *
-         * @param answer [out] a column matrix
+         * @param answer [out] a matrix
          * @param masterNode the master node concerned
          * @param slaveNode the slave node concerned
          * @param tStep the current time step
@@ -184,7 +184,7 @@ namespace oofem {
          * @param slaveNode the slave node concerned
          * @param tStep the current time step
          */
-        void computeNormalMatrixAt(FloatArray &answer, Node *masterNode, Node *slaveNode, TimeStep *TimeStep);
+        void computeNvMatrixAt(FloatArray &answer, Node *masterNode, Node *slaveNode, TimeStep *TimeStep);
 
         /**
          * Computes the vector of external forces from contact of two nodes, given as:

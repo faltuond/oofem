@@ -174,7 +174,7 @@ namespace oofem {
         double gap;
         FloatArray Nv;
         this->computeGap(gap, masterNode, slaveNode, tStep);
-        this->computeNormalMatrixAt(Nv, masterNode, slaveNode, tStep);
+        this->computeNvMatrixAt(Nv, masterNode, slaveNode, tStep);
         answer.beDyadicProductOf(Nv, Nv);
         answer.times(this->penalty);
         if ( gap > 0.0 ) {
@@ -213,7 +213,7 @@ namespace oofem {
     }
 
 
-    void Node2NodePenaltyContact::computeNormalMatrixAt(FloatArray &answer, Node *masterNode, Node *slaveNode, TimeStep *TimeStep)
+    void Node2NodePenaltyContact::computeNvMatrixAt(FloatArray &answer, Node *masterNode, Node *slaveNode, TimeStep *TimeStep)
     {
         int dimension = masterNode->giveNumberOfDofs();
         
@@ -248,7 +248,7 @@ namespace oofem {
     {
         double gap;
         this->computeGap(gap, masterNode, slaveNode, tStep);
-        this->computeNormalMatrixAt(answer, masterNode, slaveNode, tStep);
+        this->computeNvMatrixAt(answer, masterNode, slaveNode, tStep);
         if ( gap < 0.0 ) {
             answer.times(penalty * gap);
         }

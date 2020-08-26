@@ -140,7 +140,7 @@ Node2NodeLagrangianMultiplierContact :: assembleVector(FloatArray &answer, TimeS
             FloatArray n;
             Node *masterNode = this->giveDomain()->giveNode(masterSet.at(pos) );
             Node *slaveNode = this->giveDomain()->giveNode(slaveSet.at(pos) );
-            this->computeNormalMatrixAt(n, masterNode, slaveNode, tStep);
+            this->computeNvMatrixAt(n, masterNode, slaveNode, tStep);
             Dof *mdof = * ( lmdm.at(pos - 1)->begin() );
             n.times(mdof->giveUnknown(mode, tStep) );
             masterNode->giveLocationArray(dofIdArray, loc, s);
@@ -173,7 +173,7 @@ Node2NodeLagrangianMultiplierContact :: computeTangentFromContact(FloatMatrix &a
     double gap;
     FloatArray Nv;
     this->computeGap(gap, masterNode, slaveNode, tStep);
-    this->computeNormalMatrixAt(Nv, masterNode, slaveNode, tStep);
+    this->computeNvMatrixAt(Nv, masterNode, slaveNode, tStep);
     answer.initFromVector(Nv, false);
 
     return gap;
@@ -209,7 +209,7 @@ Node2NodeLagrangianMultiplierContact :: computeGap(double &answer, Node *masterN
 
 
 void
-Node2NodeLagrangianMultiplierContact :: computeNormalMatrixAt(FloatArray &answer, Node *masterNode, Node *slaveNode, TimeStep *TimeStep)
+Node2NodeLagrangianMultiplierContact :: computeNvMatrixAt(FloatArray &answer, Node *masterNode, Node *slaveNode, TimeStep *TimeStep)
 {
     FloatArray xs, xm;
     xs = * slaveNode->giveCoordinates();
