@@ -262,7 +262,7 @@ public:
     /**
      * Extract column from matrix
      */
-    template<std::size_t C, class = typename std::enable_if_t<C < M>>
+    template<std::size_t C, class = typename std::enable_if_t<C < M>>>
     FloatArrayF<N> column() const
     {
         FloatArrayF<N> c;
@@ -275,7 +275,7 @@ public:
     /**
      * Extract row from matrix
      */
-    template<std::size_t R, class = typename std::enable_if_t<R < N>>
+    template<std::size_t R, class = typename std::enable_if_t<R < N>>>
     FloatArrayF<M> row() const
     {
         FloatArrayF<M> r;
