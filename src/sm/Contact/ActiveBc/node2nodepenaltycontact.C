@@ -90,9 +90,8 @@ Node2NodePenaltyContact::assemble(SparseMtrx &answer, TimeStep *tStep,
     FloatMatrix K;
     IntArray loc, c_loc;
 
-    IntArray dofIdArray = {
-        D_u, D_v
-    };
+    IntArray dofIdArray = domain->giveDefaultNodeDofIDArry();
+
     if ( masterSet.giveSize() != slaveSet.giveSize() ) {
         OOFEM_ERROR("Number of master nodes does not match number of slave nodes")
     }
@@ -131,9 +130,8 @@ Node2NodePenaltyContact::assembleVector(FloatArray &answer, TimeStep *tStep,
     }
 
     //IntArray dofIdArray = {D_u, D_v, D_w};
-    IntArray dofIdArray = {
-        D_u, D_v
-    };
+    IntArray dofIdArray = domain->giveDefaultNodeDofIDArry();
+
 
     IntArray loc, c_loc;
     FloatArray fext;
@@ -171,9 +169,10 @@ void Node2NodePenaltyContact::giveLocationArrays(std::vector< IntArray > &rows, 
     IntArray r_loc, c_loc;
     rows.resize(masterSet.giveSize() * 2);
     cols.resize(masterSet.giveSize() * 2);
-    IntArray dofIdArray = {
+    /*IntArray dofIdArray = {
         D_u, D_v
-    };
+    };*/
+    IntArray dofIdArray = domain->giveDefaultNodeDofIDArry();
 
     int arraypos = 0;
     for ( int pos = 1; pos <= masterSet.giveSize(); ++pos ) {
@@ -195,13 +194,6 @@ void Node2NodePenaltyContact::giveLocationArrays(std::vector< IntArray > &rows, 
 }
 
 
-
-
-
-
-
-
-
 void Node2NodePenaltyContact::computeTangentFromContact(FloatMatrix &answer, Node *masterNode, Node *slaveNode, TimeStep *tStep)
 {
     double gap;
@@ -217,7 +209,8 @@ void Node2NodePenaltyContact::computeTangentFromContact(FloatMatrix &answer, Nod
 
 void Node2NodePenaltyContact::computeGap(double &answer, Node *masterNode, Node *slaveNode, TimeStep *tStep)
 {
-    //int dimension = masterNode->giveNumberOfDofs();
+    IntArray dofIdArray = domain->giveDefaultNodeDofIDArry();
+
     FloatArray uS, uM;
     auto xs = slaveNode->giveCoordinates();
     auto xm = masterNode->giveCoordinates();
@@ -235,8 +228,8 @@ void Node2NodePenaltyContact::computeGap(double &answer, Node *masterNode, Node 
         normal.times(1.0 / norm);
     }
 
-    slaveNode->giveUnknownVector(uS, { D_u, D_v }, VM_Total, tStep, true);
-    masterNode->giveUnknownVector(uM, { D_u, D_v }, VM_Total, tStep, true);
+    slaveNode->giveUnknownVector(uS, dofIdArray, VM_Total, tStep, true);
+    masterNode->giveUnknownVector(uM, dofIdArray, VM_Total, tStep, true);
     xs.add(uS);
     xm.add(uM);
     FloatArray dx = xs - xm;
@@ -265,22 +258,31 @@ void Node2NodePenaltyContact::computeNvMatrixAt(FloatArray &answer, Node *master
     }
     // The normal is not updated for node2node which is for small deformations only
     // C = {n -n}
-    answer = {
-        normal.at(1), normal.at(2),
-        -normal.at(1), -normal.at(2)
-    };
+    //answer = {
+    //    normal.at(1), normal.at(2),
+    //    -normal.at(1), -normal.at(2)
+    //};
+
+    FloatArray negativeNormal;
+    negativeNormal = normal;
+    negativeNormal.times(-1.);
+    answer.resize(2 * normal.giveSize());
+    answer.addSubVector(normal, 1);
+    answer.addSubVector(negativeNormal, normal.giveSize() + 1);
 }
 
 
 void Node2NodePenaltyContact::computeExternalForcesFromContact(FloatArray &answer, Node *masterNode, Node *slaveNode, TimeStep *tStep)
 {
     double gap;
+    FloatArray fext;
     this->computeGap(gap, masterNode, slaveNode, tStep);
-    this->computeNvMatrixAt(answer, masterNode, slaveNode, tStep);
+    this->computeNvMatrixAt(fext, masterNode, slaveNode, tStep);
     if ( gap < 0.0 ) {
-        answer.times(penalty * gap);
+        fext.times(penalty * gap);
     } else   {
-        answer.times(0);
+        fext.times(0);
     }
+    answer = fext;
 }
 } // namespace oofem
