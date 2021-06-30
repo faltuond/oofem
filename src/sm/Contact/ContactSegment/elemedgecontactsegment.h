@@ -66,7 +66,6 @@ public:
     void computeSegmentNMatrix(FloatMatrix &answer, Node *node, TimeStep *tStep) override;
     //@todo: the following two functions should be merged
     void computeSegmentBMatrix(FloatMatrix &answer, Node *node, TimeStep *tStep) override;
-    void computedNdksi(FloatMatrix &answer, Node *node, TimeStep *tStep);
     //computes the penetration of the slave node to the given(closest) segment
     double computePenetration(Node *node, TimeStep *tStep) override;
     // computes metric tensor, m_ij = t_i \cdot t_j, for 2d linear element, this is equivalent to l^2

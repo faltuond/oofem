@@ -38,7 +38,7 @@
 #include "contactsegment.h"
 #include "Elements/nlstructuralelement.h"
 #include "set.h"
-#include "feinterpol2d.h"
+#include "feinterpol.h"
 
 #define _IFT_BoundaryContactSegment_edgeSet "edgeset"
 #define _IFT_BoundaryContactSegment_pairUpdateMode "pairupdatemode"
@@ -59,7 +59,6 @@ public:
     virtual void computeSegmentNMatrix(FloatMatrix &answer, Node *node, TimeStep *tStep) override = 0;
     //@todo: the following two functions should be merged
     virtual void computeSegmentBMatrix(FloatMatrix &answer, Node *node, TimeStep *tStep) override = 0;
-    virtual void computedNdksi(FloatMatrix &answer, Node *node, TimeStep *tStep) = 0;
     //computes the penetration of the slave node to the given(closest) segment
     virtual double computePenetration(Node *node, TimeStep *tStep) override = 0;
     // check for large strain mode

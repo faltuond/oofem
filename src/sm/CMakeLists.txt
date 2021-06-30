@@ -373,6 +373,7 @@ set (sm_unsorted
     Contact/ActiveBc/node2segmentpenaltycontact.C
     Contact/ActiveBc/node2segmentlagrangemultipliercontact.C
     Contact/ContactSegment/elemedgecontactsegment.C
+    Contact/ContactSegment/elemsurfacecontactsegment.C
     Contact/ContactSegment/functioncontactsegment.C
     Contact/ContactSegment/qelemedgecontactsegment.C
     Contact/ContactSegment/polynomialcontactsegment.C

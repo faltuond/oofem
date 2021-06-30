@@ -77,7 +77,8 @@ void Linear2dElementEdgeContactSegment::computeTangent(FloatArray &answer, Node 
 
     nodalCoords.append(nodalCoords2);
     FloatMatrix dNdXi;
-    computedNdksi(dNdXi, node, tStep);
+    //computedNdksi(dNdXi, node, tStep);
+    computeSegmentBMatrix(dNdXi, node, tStep);
     answer.beProductOf(dNdXi, nodalCoords);
 }
 
@@ -123,20 +124,9 @@ void Linear2dElementEdgeContactSegment::computeSegmentNMatrix(FloatMatrix &answe
 void Linear2dElementEdgeContactSegment::computeSegmentBMatrix(FloatMatrix &answer, Node *node, TimeStep *tStep)
 {
     //for linear segments, this is always the same
-    /*answer = {{0,0},{0,0}, {-0.5, 0},{0, -0.5},{0.5,0},{0,0.5}};
-     * answer.times(2);*/
-
-    //change to have the extensions added later in the contact condition classs
-    computedNdksi(answer, node, tStep);
-}
-
-void Linear2dElementEdgeContactSegment::computedNdksi(FloatMatrix &answer, Node *node, TimeStep *tStep)
-{
-    //for linear segments, this is always the same
     answer = { { -0.5, 0 }, { 0, -0.5 }, { 0.5, 0 }, { 0, 0.5 } };
     answer.times(2);
 }
-
 
 double Linear2dElementEdgeContactSegment::computePenetration(Node *node, TimeStep *tStep)
 {

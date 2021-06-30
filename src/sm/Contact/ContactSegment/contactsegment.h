@@ -49,23 +49,23 @@
 
 
 namespace oofem {
-  class ContactSegment : public FEMComponent
-  {
-  public:
-    ContactSegment(int n, Domain *aDomain) : FEMComponent(n, aDomain){;}
-    ~ContactSegment() {};
+    class ContactSegment : public FEMComponent
+    {
+    public:
+        ContactSegment(int n, Domain *aDomain) : FEMComponent(n, aDomain){;}
+        ~ContactSegment() {};
     
-    void initializeFrom(InputRecord &ir) override {
-      FEMComponent::initializeFrom(ir);  
-      normmode = NM_Never;
-      int normmodeint = 0;
-      IR_GIVE_OPTIONAL_FIELD(ir, normmodeint, _IFT_ContactSegment_normMode);
-      normmode = (NormalizationMode)normmodeint;
-      if ( normmodeint < 0 || normmodeint > 2 ) {
-	OOFEM_ERROR("Contact segment normalization mode can be only 0, 1 or 2");
-      }
-      
-    }
+        void initializeFrom(InputRecord &ir) override {
+            FEMComponent::initializeFrom(ir);
+            normmode = NM_Never;
+            int normmodeint = 0;
+            IR_GIVE_OPTIONAL_FIELD(ir, normmodeint, _IFT_ContactSegment_normMode);
+            normmode = (NormalizationMode)normmodeint;
+            if (normmodeint < 0 || normmodeint > 2) {
+                OOFEM_ERROR("Contact segment normalization mode can be only 0, 1 or 2");
+            }
+
+        }
     
 		/**
 		 * Computes the normal vector to the segment at the contact point of the given node.

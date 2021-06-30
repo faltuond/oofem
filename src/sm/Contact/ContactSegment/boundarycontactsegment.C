@@ -35,7 +35,7 @@ void BoundaryContactSegment::postInitialize()
     }
     this->edges = set->giveBoundaryList();
     if ( edges.giveSize() <= 0 ) {
-        OOFEM_WARNING("Contact segment's edge list is empty");
+        OOFEM_WARNING("Contact segment's boundary list is empty");
     }
 }
 
@@ -71,7 +71,7 @@ void BoundaryContactSegment::giveClosestEdge(IntArray &answer, Node *node, TimeS
         int edgePos = pos * 2 + 1;
 
         bool inbetween = computeContactPoint(cPointLocal, node, element, edges(edgePos), tStep);
-        FEInterpolation2d *interpolation = dynamic_cast< FEInterpolation2d * >( element->giveInterpolation() );
+        FEInterpolation *interpolation = dynamic_cast< FEInterpolation * >( element->giveInterpolation() );
         interpolation->boundaryEdgeLocal2Global(cPoint, edges(edgePos), cPointLocal, FEIElementDeformedGeometryWrapper(element, tStep) );
 
         projection.beDifferenceOf(cPoint, nodeCoords);
