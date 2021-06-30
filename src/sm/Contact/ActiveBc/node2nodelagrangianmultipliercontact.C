@@ -95,9 +95,6 @@ Node2NodeLagrangianMultiplierContact::assemble(SparseMtrx &answer, TimeStep *tSt
     IntArray loc, c_loc;
 
     IntArray dofIdArray = this->giveDomain()->giveDefaultNodeDofIDArry();
-    /*IntArray dofIdArray = {
-     *  D_u, D_w
-     * };*/
 
     if ( masterSet.giveSize() != slaveSet.giveSize() ) {
         OOFEM_ERROR("Number of master nodes does not match number of slave nodes")
@@ -169,13 +166,7 @@ Node2NodeLagrangianMultiplierContact::assembleVector(FloatArray &answer, TimeSte
         OOFEM_ERROR("Number of master nodes does not match number of slave nodes");
     }
 
-
-    //IntArray dofIdArray = {D_u, D_v, D_w};
     IntArray dofIdArray = this->giveDomain()->giveDefaultNodeDofIDArry();
-    /*IntArray dofIdArray = {
-     *  D_u, D_w
-     * };*/
-
 
     if ( type == InternalForcesVector ) {
         // assemble lagrangian multiplier contribution to residuum
@@ -254,6 +245,8 @@ Node2NodeLagrangianMultiplierContact::computeTangentFromContact(FloatMatrix &ans
 void
 Node2NodeLagrangianMultiplierContact::computeGap(double &answer, Node *masterNode, Node *slaveNode, TimeStep *tStep)
 {
+    IntArray dofIdArray = domain->giveDefaultNodeDofIDArry();
+
     FloatArray uS, uM;
     auto xs = slaveNode->giveCoordinates();
     auto xm = masterNode->giveCoordinates();
@@ -265,8 +258,8 @@ Node2NodeLagrangianMultiplierContact::computeGap(double &answer, Node *masterNod
         normal.times(1.0 / norm);
     }
 
-    slaveNode->giveUnknownVector(uS, { D_u, D_v }, VM_Total, tStep, true);
-    masterNode->giveUnknownVector(uM, { D_u, D_v }, VM_Total, tStep, true);
+    slaveNode->giveUnknownVector(uS, dofIdArray, VM_Total, tStep, true);
+    masterNode->giveUnknownVector(uM, dofIdArray, VM_Total, tStep, true);
     xs.add(uS);
     xm.add(uM);
     FloatArray dx = xs - xm;
@@ -288,10 +281,13 @@ Node2NodeLagrangianMultiplierContact::computeNvMatrixAt(FloatArray &answer, Node
     }
     // The normal is not updated for node2node which is for small deformations only
     // C = {n -n}
-    answer = {
-        normal.at(1), normal.at(2),
-        -normal.at(1), -normal.at(2)
-    };
+
+    FloatArray negativeNormal;
+    negativeNormal = normal;
+    negativeNormal.times(-1.);
+    answer.resize(2 * normal.giveSize());
+    answer.addSubVector(normal, 1);
+    answer.addSubVector(negativeNormal, normal.giveSize() + 1);
 }
 
 
@@ -299,10 +295,12 @@ void
 Node2NodeLagrangianMultiplierContact::computeExternalForcesFromContact(FloatArray &answer, Node *masterNode, Node *slaveNode, TimeStep *tStep)
 {
     answer.resize(1);
-    this->computeGap(answer.at(1), masterNode, slaveNode, tStep);
-    if ( answer.at(1) > 0.0 ) {
-        answer.at(1) = 0.0;
+    double gap;
+    this->computeGap(gap, masterNode, slaveNode, tStep);
+    if ( gap > 0.0 ) {
+        gap = 0.0;
     }
+    answer.at(1) = gap;
 }
 
 
@@ -312,9 +310,6 @@ Node2NodeLagrangianMultiplierContact::giveLagrangianMultiplierLocationArray(cons
     int size = this->masterSet.giveSize();
     answer.resize(size);
     IntArray dofIdArray = this->giveDomain()->giveDefaultNodeDofIDArry();
-    /*IntArray dofIdArray = {
-     *  D_u, D_w
-     * };*/
 
     // assemble location array
     IntArray l(1);
@@ -332,9 +327,6 @@ Node2NodeLagrangianMultiplierContact::giveLocationArrays(std::vector< IntArray >
     rows.resize( 3 * masterSet.giveSize() );
     cols.resize( 3 * masterSet.giveSize() );
     IntArray dofIdArray = this->giveDomain()->giveDefaultNodeDofIDArry();
-    /*IntArray dofIdArray = {
-     *  D_u, D_w
-     * };*/
 
     std::vector< IntArray >lambdaeq;
     this->giveLagrangianMultiplierLocationArray(r_s, lambdaeq);
