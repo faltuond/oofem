@@ -38,7 +38,7 @@ void Linear2dElementEdgeContactSegment::computeNormal(FloatArray &answer, Node *
         StructuralElement *elem = ( StructuralElement * ) this->giveDomain()->giveElement( closestEdge.at(1) );
         int edgePos = closestEdge.at(2);
 
-        FloatArray cPoint, cPointLocal, normal;
+        FloatArray cPointLocal, normal;
 
         bool inbetween = computeContactPoint(cPointLocal, node, elem, edgePos, tStep);
         //no need to care here whether distance is negative or not
@@ -77,7 +77,6 @@ void Linear2dElementEdgeContactSegment::computeTangent(FloatArray &answer, Node 
 
     nodalCoords.append(nodalCoords2);
     FloatMatrix dNdXi;
-    //computedNdksi(dNdXi, node, tStep);
     computeSegmentBMatrix(dNdXi, node, tStep);
     answer.beProductOf(dNdXi, nodalCoords);
 }
