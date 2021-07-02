@@ -47,6 +47,7 @@
 #include "Elements/nlstructuralelement.h"
 #include "Materials/structuralmaterial.h"
 #include "intarray.h"
+#include "feinterpol3d.h"
 
 #define _IFT_Linear3dElementSurfaceContactSegment_Name "linear3delementsurfacecontactsegment"
 

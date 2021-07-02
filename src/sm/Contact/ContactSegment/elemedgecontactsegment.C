@@ -96,25 +96,11 @@ void Linear2dElementEdgeContactSegment::computeSegmentNMatrix(FloatMatrix &answe
     int edgePos = closestEdge.at(2);
 
     FloatMatrix N;
-    FloatArray cPointLocal, nodeCoords, edgeNode1Coords, edgeNode2Coords;
-    IntArray edgeNodes = elem->giveBoundaryEdgeNodes(edgePos);
+    FloatArray cPointLocal;
 
-    node->giveUpdatedCoordinates(nodeCoords, tStep);
-    elem->giveNode( edgeNodes(0) )->giveUpdatedCoordinates(edgeNode1Coords, tStep);
-    elem->giveNode( edgeNodes(1) )->giveUpdatedCoordinates(edgeNode2Coords, tStep);
     bool inbetween = computeContactPoint(cPointLocal, node, elem, edgePos, tStep);
     //all the previous just to compute the contact point...
     elem->computeEdgeNMatrix(N, edgePos, cPointLocal);
-
-    /*answer.resize(N.giveNumberOfRows(), N.giveNumberOfColumns() + 2);
-     * answer.zero();
-     *
-     * FloatMatrix extension(2, 2);
-     * extension.beUnitMatrix();
-     *
-     *      N.times(-1);
-     * answer.setSubMatrix(extension, 1, 1);
-     * answer.setSubMatrix(N, 1, 3);*/
 
     //change to have the extensions added later in the contact condition class
     answer = N;
