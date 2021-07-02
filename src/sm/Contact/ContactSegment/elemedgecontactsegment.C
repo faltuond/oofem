@@ -27,7 +27,7 @@ void Linear2dElementEdgeContactSegment::computeNormal(FloatArray &answer, Node *
     } else   {
         //determine normal from edge
         IntArray closestEdge;
-        giveClosestEdge(closestEdge, node, tStep);
+        giveClosestBoundary(closestEdge, node, tStep);
         if ( closestEdge.giveSize() != 2 ) {
             //no closest edge means no contact
             //return zeros
@@ -58,7 +58,7 @@ void Linear2dElementEdgeContactSegment::computeNormal(FloatArray &answer, Node *
 void Linear2dElementEdgeContactSegment::computeTangent(FloatArray &answer, Node *node, TimeStep *tStep)
 {
     IntArray closestEdge;
-    giveClosestEdge(closestEdge, node, tStep);
+    giveClosestBoundary(closestEdge, node, tStep);
     if ( closestEdge.giveSize() != 2 ) {
         //no closest edge means no contact
         //return zeros
@@ -84,7 +84,7 @@ void Linear2dElementEdgeContactSegment::computeTangent(FloatArray &answer, Node 
 void Linear2dElementEdgeContactSegment::computeSegmentNMatrix(FloatMatrix &answer, Node *node, TimeStep *tStep)
 {
     IntArray closestEdge;
-    giveClosestEdge(closestEdge, node, tStep);
+    giveClosestBoundary(closestEdge, node, tStep);
     if ( closestEdge.giveSize() != 2 ) {
         //no closest edge means no contact
         //return zeros
@@ -130,7 +130,7 @@ void Linear2dElementEdgeContactSegment::computeSegmentBMatrix(FloatMatrix &answe
 double Linear2dElementEdgeContactSegment::computePenetration(Node *node, TimeStep *tStep)
 {
     IntArray closestEdge;
-    giveClosestEdge(closestEdge, node, tStep);
+    giveClosestBoundary(closestEdge, node, tStep);
     if ( closestEdge.giveSize() != 2 ) {
         //no closest edge means no contact
         return 0.0;
@@ -172,11 +172,11 @@ void Linear2dElementEdgeContactSegment::computeMetricTensor(FloatMatrix &answer,
 
 void Linear2dElementEdgeContactSegment::giveLocationArray(const IntArray &dofIdArray, IntArray &answer, const UnknownNumberingScheme &c_s) const
 {
-    if ( lastEdge.giveSize() == 2 ) {
-        StructuralElement *element = ( StructuralElement * ) this->giveDomain()->giveElement( lastEdge.at(1) );
-        int edgePos = lastEdge.at(2);
+    if ( lastBoundary.giveSize() == 2 ) {
+        StructuralElement *element = ( StructuralElement * ) this->giveDomain()->giveElement( lastBoundary.at(1) );
+        int boundaryPos = lastBoundary.at(2);
 
-        IntArray boundaryNodes = element->giveBoundaryEdgeNodes(edgePos);
+        IntArray boundaryNodes = element->giveBoundaryEdgeNodes(boundaryPos);
         element->giveBoundaryLocationArray(answer, boundaryNodes, c_s, nullptr);
     } else {
         //if no segment was worked with, returns zeros
@@ -187,15 +187,15 @@ void Linear2dElementEdgeContactSegment::giveLocationArray(const IntArray &dofIdA
 void Linear2dElementEdgeContactSegment::giveLocationArrays(const IntArray &dofIdArray, IntArray &answer, const UnknownNumberingScheme &c_s)
 {
     answer.resize(0);
-    IntArray edgeloc, boundaryNodes;
+    IntArray boundaryloc, boundaryNodes;
     //iterate over all edges and add their locarrays
-    for ( int pos = 0; pos < edges.giveSize() / 2; pos++ ) {
-        StructuralElement *element = ( StructuralElement * ) this->giveDomain()->giveElement( edges(pos * 2) );
-        int edgePos = pos * 2 + 1;
+    for ( int pos = 0; pos < boundaries.giveSize() / 2; pos++ ) {
+        StructuralElement *element = ( StructuralElement * ) this->giveDomain()->giveElement(boundaries(pos * 2) );
+        int boundaryPos = pos * 2 + 1;
 
-        element->giveBoundaryLocationArray(edgeloc, element->giveBoundaryEdgeNodes( edges(edgePos) ), c_s, nullptr);
+        element->giveBoundaryLocationArray(boundaryloc, element->giveBoundaryEdgeNodes(boundaries(boundaryPos) ), c_s, nullptr);
 
-        answer.followedBy(edgeloc);
+        answer.followedBy(boundaryloc);
     }
 }
 

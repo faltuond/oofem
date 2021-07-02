@@ -71,9 +71,9 @@ namespace oofem {
         // computes metric tensor, m_ij = t_i \cdot t_j, for 2d linear element, this is equivalent to l^2
         void computeMetricTensor(FloatMatrix &answer, Node *node, TimeStep *tStep) override;
         //return location array of the slave node and master segment
-        void giveLocationArray(const IntArray &dofIdArray, IntArray &s_loc, const UnknownNumberingScheme &c_s) const override;
+        void giveLocationArray(const IntArray &dofIdArray, IntArray &answer, const UnknownNumberingScheme &c_s) const override;
         //this function is needed to allocate appropriate components of stiffness matrix
-        void giveLocationArrays(const IntArray &dofIdArray, IntArray &s_loc, const UnknownNumberingScheme &c_s) override;
+        void giveLocationArrays(const IntArray &dofIdArray, IntArray &answer, const UnknownNumberingScheme &c_s) override;
 
         const char *giveClassName() const override { return "Linear3delementsurfacecontactsegment"; }
         const char *giveInputRecordName() const override { return _IFT_Linear3dElementSurfaceContactSegment_Name; }

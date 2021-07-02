@@ -4,7 +4,7 @@ namespace oofem {
 void oofem::BoundaryContactSegment::initializeFrom(InputRecord &ir)
 {
     ContactSegment::initializeFrom(ir);
-    IR_GIVE_FIELD(ir, setnum, _IFT_BoundaryContactSegment_edgeSet);
+    IR_GIVE_FIELD(ir, setnum, _IFT_BoundaryContactSegment_boundarySet);
 
     updateMode = UM_EachStep;
     int updateModeInt = 0;
@@ -18,7 +18,7 @@ void oofem::BoundaryContactSegment::initializeFrom(InputRecord &ir)
 bool BoundaryContactSegment::hasNonLinearGeometry(Node *node, TimeStep *tStep)
 {
     IntArray closestEdge;
-    giveClosestEdge(closestEdge, node, tStep);
+    giveClosestBoundary(closestEdge, node, tStep);
     if ( closestEdge.giveSize() != 2 ) {
         //no closest edge means no contact
         return false;
@@ -33,8 +33,8 @@ void BoundaryContactSegment::postInitialize()
     if ( set == nullptr ) {
         OOFEM_ERROR("Contact segment can not find set no. " + setnum);
     }
-    this->edges = set->giveBoundaryList();
-    if ( edges.giveSize() <= 0 ) {
+    this->boundaries = set->giveBoundaryList();
+    if ( boundaries.giveSize() <= 0 ) {
         OOFEM_WARNING("Contact segment's boundary list is empty");
     }
 }
@@ -44,17 +44,17 @@ void BoundaryContactSegment::updateYourself(TimeStep *tStep)
 {
     if ( updateMode != UM_Never ) {
         knownNodes.clear();
-        knownClosestEdges.clear();
+        knownClosestBoundaries.clear();
     }
-    lastEdge.resize(0);
+    lastBoundary.resize(0);
 }
 
-void BoundaryContactSegment::giveClosestEdge(IntArray &answer, Node *node, TimeStep *tStep)
+void BoundaryContactSegment::giveClosestBoundary(IntArray &answer, Node *node, TimeStep *tStep)
 {
     int knownIndex = giveIndexOfKnownNode(node);
-    if ( updateMode != UM_EveryQuery && knownIndex != -1 && knownClosestEdges.at(knownIndex).giveSize() == 2 ) {
-        answer = knownClosestEdges.at(knownIndex);
-        lastEdge = answer;
+    if ( updateMode != UM_EveryQuery && knownIndex != -1 && knownClosestBoundaries.at(knownIndex).giveSize() == 2 ) {
+        answer = knownClosestBoundaries.at(knownIndex);
+        lastBoundary = answer;
         return;
     }
     //if previous if failed, it means that we don't know the closest edge to this node yet
@@ -66,13 +66,13 @@ void BoundaryContactSegment::giveClosestEdge(IntArray &answer, Node *node, TimeS
     node->giveUpdatedCoordinates(nodeCoords, tStep);
 
     //iterate over all edges to find the closest one
-    for ( int pos = 0; pos < edges.giveSize() / 2; pos++ ) {
-        StructuralElement *element = ( StructuralElement * ) this->giveDomain()->giveElement(edges(pos * 2) );
-        int edgePos = pos * 2 + 1;
+    for ( int pos = 0; pos < boundaries.giveSize() / 2; pos++ ) {
+        StructuralElement *element = ( StructuralElement * ) this->giveDomain()->giveElement(boundaries(pos * 2) );
+        int boundaryPos = pos * 2 + 1;
 
-        bool inbetween = computeContactPoint(cPointLocal, node, element, edges(edgePos), tStep);
+        bool inbetween = computeContactPoint(cPointLocal, node, element, boundaries(boundaryPos), tStep);
         FEInterpolation *interpolation = dynamic_cast< FEInterpolation * >( element->giveInterpolation() );
-        interpolation->boundaryEdgeLocal2Global(cPoint, edges(edgePos), cPointLocal, FEIElementDeformedGeometryWrapper(element, tStep) );
+        interpolation->boundaryEdgeLocal2Global(cPoint, boundaries(boundaryPos), cPointLocal, FEIElementDeformedGeometryWrapper(element, tStep) );
 
         projection.beDifferenceOf(cPoint, nodeCoords);
 
@@ -83,8 +83,8 @@ void BoundaryContactSegment::giveClosestEdge(IntArray &answer, Node *node, TimeS
                 //if ( answerSize == -1. || fabs(normalSize) < answerSize ) {
                 //new minimum found, update answer
                 answerSize = normalSize;
-                answer(0) = edges(pos * 2);
-                answer(1) = edges(edgePos);
+                answer(0) = boundaries(pos * 2);
+                answer(1) = boundaries(boundaryPos);
             }
         }
     }
@@ -94,8 +94,8 @@ void BoundaryContactSegment::giveClosestEdge(IntArray &answer, Node *node, TimeS
     } else {
         knownNodes.push_back(node);
         IntArray answerToStore(answer);                 //make copy to store to prevent it going out of scope - necessary??
-        knownClosestEdges.push_back(answerToStore);
+        knownClosestBoundaries.push_back(answerToStore);
     }
-    lastEdge = answer;
+    lastBoundary = answer;
 }
 }//end namespace oofem

@@ -40,7 +40,7 @@
 #include "set.h"
 #include "feinterpol.h"
 
-#define _IFT_BoundaryContactSegment_edgeSet "edgeset"
+#define _IFT_BoundaryContactSegment_boundarySet "boundaryset"
 #define _IFT_BoundaryContactSegment_pairUpdateMode "pairupdatemode"
 
 namespace oofem {
@@ -74,10 +74,10 @@ public:
     virtual void postInitialize() override;
 
 protected:
-    IntArray edges;
-    IntArray lastEdge;             //last edge worked with
+    IntArray boundaries;
+    IntArray lastBoundary;             //last edge worked with
     std::vector< Node * >knownNodes;
-    std::vector< IntArray >knownClosestEdges;
+    std::vector< IntArray >knownClosestBoundaries;
     int setnum;
 
     enum UpdateMode { UM_Never = 0, UM_EachStep = 1, UM_EveryQuery = 2 };
@@ -95,7 +95,7 @@ protected:
     //gives the closest edge to a given node in the form of an IntArray(elempos,edgepos)
     //only computes it again if it wasn't determined for this node in this solution step yet
     //(i.e. the array of known closest edges is reset after step convergence)
-    void giveClosestEdge(IntArray &answer, Node *node, TimeStep *tStep);
+    void giveClosestBoundary(IntArray &answer, Node *node, TimeStep *tStep);
 
     //computes the closest point on a given element to a given node. Answer is in parametric coordinates of element boundary
     //specific per type of elements used - needs to be overriden by child class
