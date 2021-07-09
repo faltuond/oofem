@@ -99,6 +99,7 @@ public:
     void boundarySurfaceEvaldNdx(FloatMatrix &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) override;
     double boundarySurfaceEvalNormal(FloatArray &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) override;
     void boundarySurfaceLocal2global(FloatArray &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) override;
+    void boundarySurfaceGlobal2local(FloatArray &answer, int isurf, const FloatArray &gcoords, const FEICellGeometry &cellgeo) override;
     double boundarySurfaceGiveTransformationJacobian(int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) override;
     IntArray boundarySurfaceGiveNodes(int boundary) const override;
     //@}

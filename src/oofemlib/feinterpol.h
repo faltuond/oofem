@@ -370,6 +370,18 @@ public:
      * @param cellgeo Underlying cell geometry.
      */
     virtual void boundarySurfaceLocal2global(FloatArray &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo)=0;
+
+    /**
+     * Evaluates surface local coordinates from given global ones.
+     * These derivatives are in global coordinate system (where the nodal coordinates are defined).
+     * @param answer Contains resulting local coordinates.
+     * @param isurf Determines the surface number.
+     * @param lcoords Array containing (local) coordinates.
+     * @param cellgeo Underlying cell geometry.
+     */
+    virtual void boundarySurfaceGlobal2local(FloatArray &answer, int isurf, const FloatArray &gcoords, const FEICellGeometry &cellgeo) = 0;
+
+
     /**
      * Evaluates the edge jacobian of transformation between local and global coordinates.
      * @param isurf Determines the surface number.

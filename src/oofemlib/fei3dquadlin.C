@@ -216,6 +216,13 @@ FEI3dQuadLin :: surfaceLocal2global(FloatArray &answer, int isurf,
 }
 
 void
+FEI3dQuadLin::surfaceGlobal2local(FloatArray &answer, int isurf,
+    const FloatArray &gcoords, const FEICellGeometry &cellgeo)
+{
+    OOFEM_ERROR("Not implemented.");
+}
+
+void
 FEI3dQuadLin :: surfaceEvaldNdx(FloatMatrix &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo)
 {
     ///@todo Implement this

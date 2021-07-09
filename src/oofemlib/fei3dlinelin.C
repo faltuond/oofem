@@ -176,6 +176,13 @@ FEI3dLineLin :: surfaceLocal2global(FloatArray &answer, int iedge,
     OOFEM_ERROR("no surfaces available");
 }
 
+void
+FEI3dLineLin::surfaceGlobal2local(FloatArray &answer, int isurf,
+    const FloatArray &gcoords, const FEICellGeometry &cellgeo)
+{
+    OOFEM_ERROR("no surfaces available");
+}
+
 double
 FEI3dLineLin :: surfaceGiveTransformationJacobian(int isurf, const FloatArray &lcoords,
                                                   const FEICellGeometry &cellgeo)

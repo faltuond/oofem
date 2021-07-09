@@ -380,6 +380,13 @@ FEI3dWedgeLin :: surfaceLocal2global(FloatArray &answer, int isurf,
     }
 }
 
+void
+FEI3dWedgeLin::surfaceGlobal2local(FloatArray &answer, int isurf,
+    const FloatArray &lcoords, const FEICellGeometry &cellgeo)
+{
+    OOFEM_ERROR("Not implemented.");
+}
+
 
 IntArray
 FEI3dWedgeLin :: computeLocalSurfaceMapping(int isurf) const

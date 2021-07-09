@@ -502,6 +502,13 @@ FEI3dTetQuad :: surfaceLocal2global(FloatArray &answer, int isurf,
 }
 
 void
+FEI3dTetQuad::surfaceGlobal2local(FloatArray &answer, int isurf,
+    const FloatArray &lcoords, const FEICellGeometry &cellgeo)
+{
+    OOFEM_ERROR("Not implemented.");
+}
+
+void
 FEI3dTetQuad :: surfaceEvaldNdx(FloatMatrix &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo)
 {
     const auto &snodes = this->computeLocalSurfaceMapping(isurf);

@@ -580,6 +580,12 @@ FEI3dHexaQuad :: surfaceLocal2global(FloatArray &answer, int isurf,
     }
 }
 
+void FEI3dHexaQuad::surfaceGlobal2local(FloatArray & answer, int isurf, const FloatArray & gcoords, const FEICellGeometry & cellgeo)
+{
+    OOFEM_ERROR("Not implemented.");
+}
+
+
 
 double
 FEI3dHexaQuad :: surfaceGiveTransformationJacobian(int isurf, const FloatArray &lcoords,

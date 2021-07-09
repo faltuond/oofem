@@ -66,6 +66,8 @@ public:
     { OOFEM_ERROR("Functions not supported for this interpolator."); }
     void boundarySurfaceLocal2global(FloatArray &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) override
     { OOFEM_ERROR("Functions not supported for this interpolator."); }
+    void boundarySurfaceGlobal2local(FloatArray &answer, int isurf, const FloatArray &gcoords, const FEICellGeometry &cellgeo) override
+    { OOFEM_ERROR("Functions not supported for this interpolator."); }
     double boundarySurfaceGiveTransformationJacobian(int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) override
     { OOFEM_ERROR("Functions not supported for this interpolator."); }
     IntArray boundarySurfaceGiveNodes(int boundary) const override

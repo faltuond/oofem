@@ -528,6 +528,11 @@ FEI3dHexaLin :: surfaceLocal2global(FloatArray &answer, int iedge,
                    n.at(3) * cellgeo.giveVertexCoordinates( nodes.at(3) ).at(3) + n.at(4) * cellgeo.giveVertexCoordinates( nodes.at(4) ).at(3);
 }
 
+void FEI3dHexaLin::surfaceGlobal2local(FloatArray & answer, int isurf, const FloatArray & gcoords, const FEICellGeometry & cellgeo)
+{
+    OOFEM_ERROR("Not implemented.");
+}
+
 double
 FEI3dHexaLin :: surfaceEvalNormal(FloatArray &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo)
 {

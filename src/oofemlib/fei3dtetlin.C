@@ -390,6 +390,11 @@ FEI3dTetLin :: surfaceLocal2global(FloatArray &answer, int iedge,
                    l3 * cellgeo.giveVertexCoordinates( nodes.at(3) ).at(3);
 }
 
+void FEI3dTetLin::surfaceGlobal2local(FloatArray & answer, int isurf, const FloatArray & gcoords, const FEICellGeometry & cellgeo)
+{
+    OOFEM_ERROR("Not implemented.");
+}
+
 void
 FEI3dTetLin :: surfaceEvaldNdx(FloatMatrix &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo)
 {
