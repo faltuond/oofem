@@ -183,8 +183,8 @@ namespace oofem {
         FloatArray contactPoint;
         contactPoint.beDifferenceOf(extNodeCoords, normalProjection);
 
-        int inbetween = interpolation->global2local(ksi, contactPoint, FEIElementDeformedGeometryWrapper(elem));
-        if (inbetween == 0) {
+        int inside = interpolation->boundarySurfaceGlobal2local(ksi, elemsurface, contactPoint, FEIElementDeformedGeometryWrapper(elem));
+        if (inside == 0) {
             //outside of surface, return zeros and false
             ksi.resize(2);
             return false;
