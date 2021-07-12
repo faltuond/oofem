@@ -501,7 +501,7 @@ FEI3dTetQuad :: surfaceLocal2global(FloatArray &answer, int isurf,
     }
 }
 
-void
+int
 FEI3dTetQuad::surfaceGlobal2local(FloatArray &answer, int isurf,
     const FloatArray &lcoords, const FEICellGeometry &cellgeo)
 {

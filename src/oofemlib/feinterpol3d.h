@@ -67,8 +67,8 @@ public:
     { return surfaceEvalNormal(answer, isurf, lcoords, cellgeo); }
     void boundarySurfaceLocal2global(FloatArray &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) override
     { this->surfaceLocal2global(answer, isurf, lcoords, cellgeo); }
-    void boundarySurfaceGlobal2local(FloatArray &answer, int isurf, const FloatArray &gcoords, const FEICellGeometry &cellgeo) override
-    { this->surfaceGlobal2local(answer, isurf, gcoords, cellgeo); }
+    int boundarySurfaceGlobal2local(FloatArray &answer, int isurf, const FloatArray &gcoords, const FEICellGeometry &cellgeo) override
+    { return this->surfaceGlobal2local(answer, isurf, gcoords, cellgeo); }
     double boundarySurfaceGiveTransformationJacobian(int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) override
     { return this->surfaceGiveTransformationJacobian(isurf, lcoords, cellgeo); }
 
@@ -175,7 +175,7 @@ public:
      * @param lcoords Array containing (local) coordinates.
      * @param cellgeo Underlying cell geometry.
      */
-    virtual void surfaceGlobal2local(FloatArray &answer, int isurf, const FloatArray &gcoords, const FEICellGeometry &cellgeo) = 0;
+    virtual int surfaceGlobal2local(FloatArray &answer, int isurf, const FloatArray &gcoords, const FEICellGeometry &cellgeo) = 0;
 
     /**
      * Evaluates the edge jacobian of transformation between local and global coordinates.

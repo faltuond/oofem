@@ -201,9 +201,9 @@ void FEInterpolation2d::boundarySurfaceLocal2global(FloatArray &answer, int isur
     this->local2global(answer, lcoords, cellgeo);
 }
 
-void FEInterpolation2d::boundarySurfaceGlobal2local(FloatArray & answer, int isurf, const FloatArray & gcoords, const FEICellGeometry & cellgeo)
+int FEInterpolation2d::boundarySurfaceGlobal2local(FloatArray & answer, int isurf, const FloatArray & gcoords, const FEICellGeometry & cellgeo)
 {
-    this->global2local(answer, gcoords, cellgeo);
+    return this->global2local(answer, gcoords, cellgeo);
 }
 
 double FEInterpolation2d::boundarySurfaceGiveTransformationJacobian(int isurf, const FloatArray &lcoords,

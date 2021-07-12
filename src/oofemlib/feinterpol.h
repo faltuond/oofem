@@ -378,8 +378,9 @@ public:
      * @param isurf Determines the surface number.
      * @param lcoords Array containing (local) coordinates.
      * @param cellgeo Underlying cell geometry.
+     * @return 0 if point lies outside of surface, a nonzero value otherwise
      */
-    virtual void boundarySurfaceGlobal2local(FloatArray &answer, int isurf, const FloatArray &gcoords, const FEICellGeometry &cellgeo) = 0;
+    virtual int boundarySurfaceGlobal2local(FloatArray &answer, int isurf, const FloatArray &gcoords, const FEICellGeometry &cellgeo) = 0;
 
 
     /**

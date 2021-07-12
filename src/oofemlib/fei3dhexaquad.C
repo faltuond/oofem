@@ -580,7 +580,7 @@ FEI3dHexaQuad :: surfaceLocal2global(FloatArray &answer, int isurf,
     }
 }
 
-void FEI3dHexaQuad::surfaceGlobal2local(FloatArray & answer, int isurf, const FloatArray & gcoords, const FEICellGeometry & cellgeo)
+int FEI3dHexaQuad::surfaceGlobal2local(FloatArray & answer, int isurf, const FloatArray & gcoords, const FEICellGeometry & cellgeo)
 {
     OOFEM_ERROR("Not implemented.");
 }

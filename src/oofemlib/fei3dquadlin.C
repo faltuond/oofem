@@ -215,7 +215,7 @@ FEI3dQuadLin :: surfaceLocal2global(FloatArray &answer, int isurf,
     }
 }
 
-void
+int
 FEI3dQuadLin::surfaceGlobal2local(FloatArray &answer, int isurf,
     const FloatArray &gcoords, const FEICellGeometry &cellgeo)
 {

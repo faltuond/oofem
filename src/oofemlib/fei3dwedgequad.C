@@ -405,7 +405,7 @@ FEI3dWedgeQuad :: surfaceLocal2global(FloatArray &answer, int isurf,
     }
 }
 
-void FEI3dWedgeQuad::surfaceGlobal2local(FloatArray & answer, int isurf, const FloatArray & gcoords, const FEICellGeometry & cellgeo)
+int FEI3dWedgeQuad::surfaceGlobal2local(FloatArray & answer, int isurf, const FloatArray & gcoords, const FEICellGeometry & cellgeo)
 {
     OOFEM_ERROR("Not implemented.");
 }
