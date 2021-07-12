@@ -785,7 +785,7 @@ void DofManager :: giveUnknownVectorOfType(FloatArray &answer, UnknownType ut, V
         // No local c.s, just copy the values to respective index;
         answer.resize(3);
         answer.zero();
-        for ( int i = 1; i <= k; i++ ) {
+        for ( int i = 1; i <= dofIDArry.giveSize(); i++ ) {
             if ( dofIDArry.at(i) == D_u || dofIDArry.at(i) == V_u ) {
                 answer.at(1) = localVector.at(i);
             } else if ( dofIDArry.at(i) == D_v || dofIDArry.at(i) == V_v ) {
