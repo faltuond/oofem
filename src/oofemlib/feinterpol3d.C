@@ -99,6 +99,75 @@ IntArray FEInterpolation3d :: computeEdgeMapping(const IntArray &elemNodes, int 
     return edgeNodes;
 }
 
+#define POINT_TOL 1.e-3
+
+int FEInterpolation3d::surfaceGlobal2local(FloatArray & answer, int isurf, const FloatArray & gcoords, const FEICellGeometry & cellgeo)
+{
+    //What follows is a copy of FEInterpol2d::global2local(), just with the functions invoked changed to fit the case with 3D element's surface
+
+    FloatArray res, delta, guess, lcoords_guess;
+    FloatMatrix jac, dNdXi;
+    double convergence_limit, error = 0.0;
+
+    // find a suitable convergence limit
+    convergence_limit = 1e-6 /* this->giveCharacteristicLength(cellgeo)*/; //@todo include char. length of surface? How to get it?
+
+    // setup initial guess
+    lcoords_guess.resize(2);
+    lcoords_guess.zero();
+
+    // apply Newton-Raphson to solve the problem
+    for (int nite = 0; nite < 10; nite++) {
+        // compute the residual
+        this->surfaceLocal2global(guess, isurf, lcoords_guess, cellgeo);
+        res = { gcoords(0) - guess(0), gcoords(1) - guess(1) };
+
+        // check for convergence
+        error = res.computeNorm();
+        if (error < convergence_limit) {
+            break;
+        }
+
+        // compute the corrections
+        // we need a surface Jacobian matrix jac
+        dNdXi.zero();
+        this->surfaceEvaldNdx(dNdXi, isurf, lcoords_guess, cellgeo);
+
+        this->surfaceGiveJacobianMatrixAt(jac, isurf, lcoords_guess, cellgeo);
+        jac.solveForRhs(res, delta);
+
+        // update guess
+        lcoords_guess.add(delta);
+    }
+    if (error > convergence_limit) { // Imperfect, could give false negatives.
+        OOFEM_WARNING("Failed convergence");
+        answer = { 1. / 3., 1. / 3. };
+        return false;
+    }
+
+    answer = { lcoords_guess(0), lcoords_guess(1) };
+
+    // test if inside
+    bool inside = true;
+    for (int i = 1; i <= 2; i++) {
+        if (answer.at(i) < (-1. - POINT_TOL)) {
+            answer.at(i) = -1.;
+            inside = false;
+        }
+        else if (answer.at(i) > (1. + POINT_TOL)) {
+            answer.at(i) = 1.;
+            inside = false;
+        }
+    }
+
+    return inside;
+}
+
+void FEInterpolation3d::surfaceGiveJacobianMatrixAt(FloatMatrix & jacobianMatrix, int isurf, const FloatArray & lcoords, const FEICellGeometry & cellgeo)
+{
+    OOFEM_ERROR("Surface Jacobian matrix: Not implemented in a general way, needs to be overloaded if desired");
+}
+
 IntArray FEInterpolation3d :: computeSurfaceMapping(const IntArray &elemNodes, int isurf) const
 {
     const auto &ln = this->computeLocalSurfaceMapping(isurf);

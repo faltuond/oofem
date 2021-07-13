@@ -175,16 +175,25 @@ public:
      * @param lcoords Array containing (local) coordinates.
      * @param cellgeo Underlying cell geometry.
      */
-    virtual int surfaceGlobal2local(FloatArray &answer, int isurf, const FloatArray &gcoords, const FEICellGeometry &cellgeo) = 0;
+    virtual int surfaceGlobal2local(FloatArray &answer, int isurf, const FloatArray &gcoords, const FEICellGeometry &cellgeo);
 
     /**
-     * Evaluates the edge jacobian of transformation between local and global coordinates.
+     * Evaluates the surface jacobian of transformation between local and global coordinates.
      * @param isurf Determines the surface number.
      * @param lcoords Array containing (local) coordinates.
      * @param cellgeo Underlying cell geometry.
      * @return Determinant of the transformation.
      */
     virtual double surfaceGiveTransformationJacobian(int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) = 0;
+
+    /**
+     * Evaluates the Jacobian matrix J (x,y,z)/J(ksi, eta) transformation between surface-local and global coordinates.
+     * @param isurf Determines the surface number.
+     * @param lcoords Array containing (local) coordinates.
+     * @param cellgeo Underlying cell geometry.
+     * @return Determinant of the transformation.
+     */
+    virtual void surfaceGiveJacobianMatrixAt(FloatMatrix &jacobianMatrix, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo);
 
     virtual IntArray computeLocalSurfaceMapping(int isurf) const = 0;
     IntArray computeSurfaceMapping(const IntArray &elemNodes, int isurf) const;

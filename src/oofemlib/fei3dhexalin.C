@@ -530,7 +530,18 @@ FEI3dHexaLin :: surfaceLocal2global(FloatArray &answer, int iedge,
 
 int FEI3dHexaLin::surfaceGlobal2local(FloatArray & answer, int isurf, const FloatArray & gcoords, const FEICellGeometry & cellgeo)
 {
-    OOFEM_ERROR("Not implemented.");
+    //OOFEM_ERROR("Not implemented.");
+
+    return FEInterpolation3d::surfaceGlobal2local(answer, isurf, gcoords, cellgeo);
+
+    //IntArray surfNodeIndices;
+    //this->computeSurfaceMapping(surfNodeIndices, isurf);
+
+    //FloatArray vertex1Coords, vertex2Coords, vertex3Coords, vertex4Coords;
+    //vertex1Coords = cellgeo.giveVertexCoordinates(surfNodeIndices(1));
+    //vertex2Coords = cellgeo.giveVertexCoordinates(surfNodeIndices(2));
+    //vertex3Coords = cellgeo.giveVertexCoordinates(surfNodeIndices(3));
+    //vertex4Coords = cellgeo.giveVertexCoordinates(surfNodeIndices(4));
 }
 
 double
