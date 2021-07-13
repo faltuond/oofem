@@ -148,9 +148,9 @@ namespace oofem {
         }
     }
 
-    bool Linear3dElementSurfaceContactSegment::computeContactPoint(FloatArray & ksi, Node * node, StructuralElement * elem, int elemsurface, TimeStep * tStep)
+    bool Linear3dElementSurfaceContactSegment::computeContactPoint(FloatArray & ksi, Node * node, StructuralElement * elem, int isurf, TimeStep * tStep)
     {
-        //@todo Projection on surface, returning parametric coordinates ksi
+        //@todo Test that interpolation is linear
 
         FEInterpolation3d *interpolation = dynamic_cast<FEInterpolation3d *>(elem->giveInterpolation());
         if (interpolation == nullptr) {
@@ -161,7 +161,7 @@ namespace oofem {
         FloatArray extNodeCoords, surfNodeCoords1, surfNodeCoords2, surfNodeCoords3;
         IntArray surfaceNodes;
 
-        surfaceNodes = elem->giveBoundarySurfaceNodes(elemsurface);
+        surfaceNodes = elem->giveBoundarySurfaceNodes(isurf);
         node->giveUpdatedCoordinates(extNodeCoords, tStep);
         elem->giveNode(surfaceNodes(0))->giveUpdatedCoordinates(surfNodeCoords1, tStep);
         elem->giveNode(surfaceNodes(1))->giveUpdatedCoordinates(surfNodeCoords2, tStep);
@@ -183,21 +183,12 @@ namespace oofem {
         FloatArray contactPoint;
         contactPoint.beDifferenceOf(extNodeCoords, normalProjection);
 
-        int inside = interpolation->boundarySurfaceGlobal2local(ksi, elemsurface, contactPoint, FEIElementDeformedGeometryWrapper(elem));
+        int inside = interpolation->boundarySurfaceGlobal2local(ksi, isurf, contactPoint, FEIElementDeformedGeometryWrapper(elem));
         if (inside == 0) {
             //outside of surface, return zeros and false
             ksi.resize(2);
             return false;
         }
-
-        //We obtained the parametric coordinates for the whole element. We need them only for the surface
-        //We are reasonably sure, though, that one of those is 1 or -1, since we are on the surface of the element
-        //That one should be eliminated.
-
-        //NO. What if we are exactly in the vertex and all of them are 1?
-
-
-
 
         return true;
     }
