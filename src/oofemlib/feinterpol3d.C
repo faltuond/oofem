@@ -168,6 +168,11 @@ void FEInterpolation3d::surfaceGiveJacobianMatrixAt(FloatMatrix & jacobianMatrix
     OOFEM_ERROR("Surface Jacobian matrix: Not implemented in a general way, needs to be overloaded if desired");
 }
 
+void FEInterpolation3d::surfaceEvalBaseVectorsAt(FloatArray & G1, FloatArray & G2, int isurf, const FloatArray & lcoords, const FEICellGeometry & cellgeo)
+{
+    OOFEM_ERROR("Not implemented");
+}
+
 IntArray FEInterpolation3d :: computeSurfaceMapping(const IntArray &elemNodes, int isurf) const
 {
     const auto &ln = this->computeLocalSurfaceMapping(isurf);
@@ -193,6 +198,11 @@ void FEInterpolation3d :: edgeEvaldNdxi(FloatArray &answer, int iedge, const Flo
 }
 
 void FEInterpolation3d :: surfaceEvaldNdx(FloatMatrix &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo)
+{
+    OOFEM_ERROR("Not implemented");
+}
+
+void FEInterpolation3d::surfaceEvaldNdxi(FloatMatrix & answer, int isurf, const FloatArray & lcoords, const FEICellGeometry & cellgeo)
 {
     OOFEM_ERROR("Not implemented");
 }

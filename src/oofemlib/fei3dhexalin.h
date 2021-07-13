@@ -76,10 +76,13 @@ public:
     // Surface
     void surfaceEvalN(FloatArray &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) override;
     void surfaceEvaldNdx(FloatMatrix &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) override;
+    void surfaceEvaldNdxi(FloatMatrix &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) override;
     void surfaceLocal2global(FloatArray &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) override;
     int surfaceGlobal2local(FloatArray &answer, int isurf, const FloatArray &gcoords, const FEICellGeometry &cellgeo) override;
     double surfaceEvalNormal(FloatArray &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) override;
     double surfaceGiveTransformationJacobian(int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) override;
+    void surfaceGiveJacobianMatrixAt(FloatMatrix &jacobianMatrix, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) override;
+    void surfaceEvalBaseVectorsAt(FloatArray &G1, FloatArray &G2, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) override;
     IntArray computeLocalSurfaceMapping(int iedge) const override;
 
     void giveJacobianMatrixAt(FloatMatrix &jacobianMatrix, const FloatArray &lcoords, const FEICellGeometry &cellgeo) override;

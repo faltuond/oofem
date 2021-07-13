@@ -147,6 +147,16 @@ public:
      * @param cellgeo Underlying cell geometry.
      */
     virtual void surfaceEvaldNdx(FloatMatrix &answer, int isurf,const FloatArray &lcoords, const FEICellGeometry &cellgeo);
+
+    /**
+     * Evaluates the matrix of derivatives of edge interpolation functions (shape functions) at given point.
+     * These derivatives are in local coordinate system.
+     * @param answer Contains resulting matrix of derivatives, the member at i,j position contains value of dNj/dxii.
+     * @param isurf Determines the surface number.
+     * @param lcoords Array containing (local) coordinates.
+     * @param cellgeo Underlying cell geometry.
+     */
+    virtual void surfaceEvaldNdxi(FloatMatrix &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo);
     /**
      * Evaluates the normal out of the surface at given point.
      * @param answer Contains resulting normal vector.
@@ -188,12 +198,21 @@ public:
 
     /**
      * Evaluates the Jacobian matrix J (x,y,z)/J(ksi, eta) transformation between surface-local and global coordinates.
+     * @param jacobianMatrix The answer to be returned
      * @param isurf Determines the surface number.
      * @param lcoords Array containing (local) coordinates.
      * @param cellgeo Underlying cell geometry.
-     * @return Determinant of the transformation.
      */
     virtual void surfaceGiveJacobianMatrixAt(FloatMatrix &jacobianMatrix, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo);
+
+    /**
+     * Evaluates tangent vectors to surface at local coordinates
+     * @param G1, G2 The answers to be returned
+     * @param isurf Determines the surface number.
+     * @param lcoords Array containing (local) coordinates.
+     * @param cellgeo Underlying cell geometry.
+     */
+    virtual void surfaceEvalBaseVectorsAt(FloatArray &G1, FloatArray &G2, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo);
 
     virtual IntArray computeLocalSurfaceMapping(int isurf) const = 0;
     IntArray computeSurfaceMapping(const IntArray &elemNodes, int isurf) const;
