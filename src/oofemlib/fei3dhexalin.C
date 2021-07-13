@@ -635,13 +635,13 @@ FEI3dHexaLin::surfaceEvalBaseVectorsAt(FloatArray &G1, FloatArray &G2, int isurf
 
     //Get nodes which correspond to the surface in question
     IntArray nodeIndices;
-    this->computeSurfaceMapping(nodeIndices, isurf);
+    nodeIndices = this->computeLocalSurfaceMapping(isurf);
 
     G1.resize(0);
     G2.resize(0);
     for (int i = 0; i < 4; ++i) {
-        G1.add(dNdxi(i, 1), cellgeo.giveVertexCoordinates(nodeIndices(i)-1)); //the -1 here and below is to transition to 0-based indexing
-        G2.add(dNdxi(i, 2), cellgeo.giveVertexCoordinates(nodeIndices(i)-1));
+        G1.add(dNdxi(i, 0), cellgeo.giveVertexCoordinates(nodeIndices(i)));
+        G2.add(dNdxi(i, 1), cellgeo.giveVertexCoordinates(nodeIndices(i)));
     }
 }
 

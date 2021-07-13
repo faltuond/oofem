@@ -106,7 +106,7 @@ int FEInterpolation3d::surfaceGlobal2local(FloatArray & answer, int isurf, const
     //What follows is a copy of FEInterpol2d::global2local(), just with the functions invoked changed to fit the case with 3D element's surface
 
     FloatArray res, delta, guess, lcoords_guess;
-    FloatMatrix jac, dNdXi;
+    FloatMatrix jac;
     double convergence_limit, error = 0.0;
 
     // find a suitable convergence limit
@@ -120,7 +120,7 @@ int FEInterpolation3d::surfaceGlobal2local(FloatArray & answer, int isurf, const
     for (int nite = 0; nite < 10; nite++) {
         // compute the residual
         this->surfaceLocal2global(guess, isurf, lcoords_guess, cellgeo);
-        res = { gcoords(0) - guess(0), gcoords(1) - guess(1) };
+        res = { gcoords(0) - guess(0), gcoords(1) - guess(1), gcoords(2) - guess(2) };
 
         // check for convergence
         error = res.computeNorm();
@@ -129,15 +129,11 @@ int FEInterpolation3d::surfaceGlobal2local(FloatArray & answer, int isurf, const
         }
 
         // compute the corrections
-        // we need a surface Jacobian matrix jac
-        dNdXi.zero();
-        this->surfaceEvaldNdx(dNdXi, isurf, lcoords_guess, cellgeo);
-
         this->surfaceGiveJacobianMatrixAt(jac, isurf, lcoords_guess, cellgeo);
         jac.solveForRhs(res, delta);
 
         // update guess
-        lcoords_guess.add(delta);
+        lcoords_guess.add(delta); //@todo solve dimension mismatch here
     }
     if (error > convergence_limit) { // Imperfect, could give false negatives.
         OOFEM_WARNING("Failed convergence");
