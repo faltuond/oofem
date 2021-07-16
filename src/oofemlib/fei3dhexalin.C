@@ -549,22 +549,6 @@ FEI3dHexaLin :: surfaceLocal2global(FloatArray &answer, int iedge,
                    n.at(3) * cellgeo.giveVertexCoordinates( nodes.at(3) ).at(3) + n.at(4) * cellgeo.giveVertexCoordinates( nodes.at(4) ).at(3);
 }
 
-int FEI3dHexaLin::surfaceGlobal2local(FloatArray & answer, int isurf, const FloatArray & gcoords, const FEICellGeometry & cellgeo)
-{
-    return FEInterpolation3d::surfaceGlobal2local(answer, isurf, gcoords, cellgeo);
-
-    //@todo implement better, see commented code below
-
-    //IntArray surfNodeIndices;
-    //this->computeSurfaceMapping(surfNodeIndices, isurf);
-
-    //FloatArray vertex1Coords, vertex2Coords, vertex3Coords, vertex4Coords;
-    //vertex1Coords = cellgeo.giveVertexCoordinates(surfNodeIndices(1));
-    //vertex2Coords = cellgeo.giveVertexCoordinates(surfNodeIndices(2));
-    //vertex3Coords = cellgeo.giveVertexCoordinates(surfNodeIndices(3));
-    //vertex4Coords = cellgeo.giveVertexCoordinates(surfNodeIndices(4));
-}
-
 double
 FEI3dHexaLin :: surfaceEvalNormal(FloatArray &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo)
 {
@@ -600,49 +584,6 @@ FEI3dHexaLin :: surfaceGiveTransformationJacobian(int isurf, const FloatArray &l
 {
     FloatArray normal;
     return this->surfaceEvalNormal(normal, isurf, lcoords, cellgeo);
-}
-
-void FEI3dHexaLin::surfaceGiveJacobianMatrixAt(FloatMatrix & jacobianMatrix, int isurf, const FloatArray & lcoords, const FEICellGeometry & cellgeo)
-{
-    //The shape of the Jacobian matrix constructed is inspired by the analogical case in FEI3dQuadLin: quoted below
-
-    // Jacobian matrix consists of the three curvilinear base vectors.The third is taken as the normal to the surface.
-    // Note! The base vectors are not normalized except the third (normal)
-    FloatArray G1, G2, G3;
-    this->surfaceEvalBaseVectorsAt(G1, G2, isurf, lcoords, cellgeo);
-    G3.beVectorProductOf(G1, G2);
-
-    jacobianMatrix.resize(3, 3);
-    jacobianMatrix.at(1, 1) = G1.at(1);
-    jacobianMatrix.at(1, 2) = G2.at(1);
-    jacobianMatrix.at(1, 3) = G3.at(1);
-    jacobianMatrix.at(2, 1) = G1.at(2);
-    jacobianMatrix.at(2, 2) = G2.at(2);
-    jacobianMatrix.at(2, 3) = G3.at(2);
-    jacobianMatrix.at(3, 1) = G1.at(3);
-    jacobianMatrix.at(3, 2) = G2.at(3);
-    jacobianMatrix.at(3, 3) = G3.at(3);
-}
-
-void
-FEI3dHexaLin::surfaceEvalBaseVectorsAt(FloatArray &G1, FloatArray &G2, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo)
-{
-    //Adapted from FEI3dQuadLin
-
-    // Note: These are not normalized. Returns the two tangent vectors to the surface.
-    FloatMatrix dNdxi;
-    this->surfaceEvaldNdxi(dNdxi, isurf, lcoords, cellgeo);
-
-    //Get nodes which correspond to the surface in question
-    IntArray nodeIndices;
-    nodeIndices = this->computeLocalSurfaceMapping(isurf);
-
-    G1.resize(0);
-    G2.resize(0);
-    for (int i = 0; i < 4; ++i) {
-        G1.add(dNdxi(i, 0), cellgeo.giveVertexCoordinates(nodeIndices(i)));
-        G2.add(dNdxi(i, 1), cellgeo.giveVertexCoordinates(nodeIndices(i)));
-    }
 }
 
 double FEI3dHexaLin::surfaceGiveLCoordIndices(IntArray & answer, int isurf) const

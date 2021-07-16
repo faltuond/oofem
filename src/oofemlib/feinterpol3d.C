@@ -179,12 +179,44 @@ int FEInterpolation3d::surfaceGlobal2local(FloatArray & answer, int isurf, const
 
 void FEInterpolation3d::surfaceGiveJacobianMatrixAt(FloatMatrix & jacobianMatrix, int isurf, const FloatArray & lcoords, const FEICellGeometry & cellgeo)
 {
-    OOFEM_ERROR("Surface Jacobian matrix: Not implemented in a general way, needs to be overloaded if desired");
+    //The shape of the Jacobian matrix constructed is inspired by the analogical case in FEI3dQuadLin: quoted below
+
+    // Jacobian matrix consists of the three curvilinear base vectors.The third is taken as the normal to the surface.
+    // Note! The base vectors are not normalized except the third (normal)
+    FloatArray G1, G2, G3;
+    this->surfaceEvalBaseVectorsAt(G1, G2, isurf, lcoords, cellgeo);
+    G3.beVectorProductOf(G1, G2);
+
+    jacobianMatrix.resize(3, 3);
+    jacobianMatrix.at(1, 1) = G1.at(1);
+    jacobianMatrix.at(1, 2) = G2.at(1);
+    jacobianMatrix.at(1, 3) = G3.at(1);
+    jacobianMatrix.at(2, 1) = G1.at(2);
+    jacobianMatrix.at(2, 2) = G2.at(2);
+    jacobianMatrix.at(2, 3) = G3.at(2);
+    jacobianMatrix.at(3, 1) = G1.at(3);
+    jacobianMatrix.at(3, 2) = G2.at(3);
+    jacobianMatrix.at(3, 3) = G3.at(3);
 }
 
 void FEInterpolation3d::surfaceEvalBaseVectorsAt(FloatArray & G1, FloatArray & G2, int isurf, const FloatArray & lcoords, const FEICellGeometry & cellgeo)
 {
-    OOFEM_ERROR("Not implemented");
+    //Adapted from FEI3dQuadLin
+
+    // Note: These are not normalized. Returns the two tangent vectors to the surface.
+    FloatMatrix dNdxi;
+    this->surfaceEvaldNdxi(dNdxi, isurf, lcoords, cellgeo);
+
+    //Get nodes which correspond to the surface in question
+    IntArray nodeIndices;
+    nodeIndices = this->computeLocalSurfaceMapping(isurf);
+
+    G1.resize(0);
+    G2.resize(0);
+    for (int i = 0; i < nodeIndices.giveSize(); ++i) {
+        G1.add(dNdxi(i, 0), cellgeo.giveVertexCoordinates(nodeIndices(i)));
+        G2.add(dNdxi(i, 1), cellgeo.giveVertexCoordinates(nodeIndices(i)));
+    }
 }
 
 double FEInterpolation3d::surfaceGiveLCoordIndices(IntArray &answer, const int isurf) const {
