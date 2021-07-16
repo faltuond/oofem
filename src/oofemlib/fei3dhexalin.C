@@ -645,6 +645,31 @@ FEI3dHexaLin::surfaceEvalBaseVectorsAt(FloatArray &G1, FloatArray &G2, int isurf
     }
 }
 
+double FEI3dHexaLin::surfaceGiveLCoordIndices(IntArray & answer, int isurf) const
+{
+    if (isurf == 1) {
+        answer = { 1, 2 };
+        return 1.0;
+    } else if(isurf == 2) {
+        answer = { 1, 2 };
+        return -1.0;
+    } else if (isurf == 3) {
+        answer = { 2, 3 };
+        return -1.0;
+    } else if (isurf == 4) {
+        answer = { 1, 3 };
+        return 1.0;
+    } else if (isurf == 5) {
+        answer = { 2, 3 };
+        return 1.0;
+    } else if (isurf == 6) {
+        answer = { 1, 3 };
+        return -1.0;
+    } else {
+        OOFEM_ERROR("Incompatible surface number (%i)", isurf);
+    }
+}
+
 
 IntArray
 FEI3dHexaLin :: computeLocalSurfaceMapping(int isurf) const

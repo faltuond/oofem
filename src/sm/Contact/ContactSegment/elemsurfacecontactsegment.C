@@ -70,7 +70,7 @@ namespace oofem {
 
         bool inbetween = computeContactPoint(cPointLocal, node, elem, surfacePos, tStep);
         //all the previous just to compute the contact point...
-        elem->computeEdgeNMatrix(N, surfacePos, cPointLocal);
+        elem->computeSurfaceNMatrix(N, surfacePos, cPointLocal);
     }
 
     void Linear3dElementSurfaceContactSegment::computeSegmentBMatrix(FloatMatrix & answer, Node * node, TimeStep * tStep)

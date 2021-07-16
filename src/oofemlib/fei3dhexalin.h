@@ -83,6 +83,7 @@ public:
     double surfaceGiveTransformationJacobian(int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) override;
     void surfaceGiveJacobianMatrixAt(FloatMatrix &jacobianMatrix, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) override;
     void surfaceEvalBaseVectorsAt(FloatArray &G1, FloatArray &G2, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) override;
+    double surfaceGiveLCoordIndices(IntArray &answer, int isurf) const override;
     IntArray computeLocalSurfaceMapping(int iedge) const override;
 
     void giveJacobianMatrixAt(FloatMatrix &jacobianMatrix, const FloatArray &lcoords, const FEICellGeometry &cellgeo) override;

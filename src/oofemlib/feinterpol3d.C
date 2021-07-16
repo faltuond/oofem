@@ -105,9 +105,15 @@ int FEInterpolation3d::surfaceGlobal2local(FloatArray & answer, int isurf, const
 {
     //What follows is a copy of FEInterpol2d::global2local(), just with the functions invoked changed to fit the case with 3D element's surface
 
-    FloatArray res, delta, guess, lcoords_guess;
+    FloatArray res, delta, delta_3d, guess, lcoords_guess, lcoords_guess_3d;
+    IntArray surface_coord_indices;
     FloatMatrix jac;
     double convergence_limit, error = 0.0;
+    double const_surface_coord;
+
+    // depending on which surface we are on, find the indices of the coords relevant to the surface
+    // and also the value of the one which is irrelevant
+    const_surface_coord = this->surfaceGiveLCoordIndices(surface_coord_indices, isurf);
 
     // find a suitable convergence limit
     convergence_limit = 1e-6 /* this->giveCharacteristicLength(cellgeo)*/; //@todo include char. length of surface? How to get it?
@@ -122,6 +128,12 @@ int FEInterpolation3d::surfaceGlobal2local(FloatArray & answer, int isurf, const
         this->surfaceLocal2global(guess, isurf, lcoords_guess, cellgeo);
         res = { gcoords(0) - guess(0), gcoords(1) - guess(1), gcoords(2) - guess(2) };
 
+        //@todo create 3D guess based on what surface we are on
+        lcoords_guess_3d.resize(3);
+        lcoords_guess_3d.add(const_surface_coord);
+        lcoords_guess_3d.at(surface_coord_indices.at(1)) = lcoords_guess.at(1);
+        lcoords_guess_3d.at(surface_coord_indices.at(2)) = lcoords_guess.at(2);
+
         // check for convergence
         error = res.computeNorm();
         if (error < convergence_limit) {
@@ -130,10 +142,16 @@ int FEInterpolation3d::surfaceGlobal2local(FloatArray & answer, int isurf, const
 
         // compute the corrections
         this->surfaceGiveJacobianMatrixAt(jac, isurf, lcoords_guess, cellgeo);
-        jac.solveForRhs(res, delta);
+        jac.solveForRhs(res, delta_3d);
+
+        //reduce 3d guess back to 2d
+        delta.resize(2);
+        delta.at(1) = delta_3d.at(surface_coord_indices.at(1));
+        delta.at(2) = delta_3d.at(surface_coord_indices.at(2));
 
         // update guess
-        lcoords_guess.add(delta); //@todo solve dimension mismatch here
+        lcoords_guess.add(delta);
+
     }
     if (error > convergence_limit) { // Imperfect, could give false negatives.
         OOFEM_WARNING("Failed convergence");
@@ -167,6 +185,11 @@ void FEInterpolation3d::surfaceGiveJacobianMatrixAt(FloatMatrix & jacobianMatrix
 void FEInterpolation3d::surfaceEvalBaseVectorsAt(FloatArray & G1, FloatArray & G2, int isurf, const FloatArray & lcoords, const FEICellGeometry & cellgeo)
 {
     OOFEM_ERROR("Not implemented");
+}
+
+double FEInterpolation3d::surfaceGiveLCoordIndices(IntArray &answer, const int isurf) const {
+    OOFEM_ERROR("Not implemented");
+    return 0.0;
 }
 
 IntArray FEInterpolation3d :: computeSurfaceMapping(const IntArray &elemNodes, int isurf) const

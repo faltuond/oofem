@@ -214,6 +214,14 @@ public:
      */
     virtual void surfaceEvalBaseVectorsAt(FloatArray &G1, FloatArray &G2, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo);
 
+    /**
+     * Returns the indices of local coordinates which describe the given surface, as well as the value of the third local coordinate on that surface.
+     * @param answer The answer to be returned
+     * @param isurf Determines the surface number.
+     * @return The value of the third coordinate
+     */
+    virtual double surfaceGiveLCoordIndices(IntArray &answer, const int isurf) const;
+
     virtual IntArray computeLocalSurfaceMapping(int isurf) const = 0;
     IntArray computeSurfaceMapping(const IntArray &elemNodes, int isurf) const;
     //@}
